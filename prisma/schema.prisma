@@ -1,0 +1,324 @@
+// prisma/schema.prisma
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum UserStatus {
+  BLACKLISTED
+  ACTIVE
+  PENDING
+  INACTIVE
+}
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  status UserStatus @default(INACTIVE)
+  emailVerified DateTime?
+  image         String?
+  password      String?
+  accounts      Account[]
+  isTwoFactorEnabled Boolean @default(false)
+  userGroups UserOnUserGroups[]
+  twoFactorConfirmation TwoFactorConfirmation?
+  addressId String?
+  supplierProfile SupplierProfile?
+  notifications Notification[]
+  activityLog Audit[]
+  consumptionRecordsAdded InventoryItemConsumptionRecord[] @relation("addedByUser")
+  consumptionRecordsLastModified InventoryItemConsumptionRecord[] @relation("lastModifiedByUser")
+}
+model Address {
+  id            String    @id @default(cuid())
+  streetAddress          String?
+  lgaId String?
+  stateId String
+  countryId String
+  latitude String?
+  longitude String?
+  timeZone String?
+}
+
+
+
+model Account {
+  id                 String  @id @default(cuid())
+  userId             String
+  type               String
+  provider           String
+  providerAccountId  String
+  refresh_token      String?  @db.Text
+  access_token       String?  @db.Text
+  expires_at         Int?
+  token_type         String?
+  scope              String?
+  id_token           String?  @db.Text
+  session_state      String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model VerificationToken {
+  id String @id @default(cuid())
+  email String
+  token String @unique
+  expires DateTime
+
+  @@unique([email, token])
+}
+
+model PasswordResetToken {
+  id String @id @default(cuid())
+  email String
+  token String @unique
+  expires DateTime
+
+  @@unique([email, token])
+}
+
+model TwoFactorToken {
+  id String @id @default(cuid())
+  email String
+  token String @unique
+  expires DateTime
+
+  @@unique([email, token])
+}
+
+model TwoFactorConfirmation {
+  id String @id @default(cuid())
+
+  userId String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId])
+}
+
+
+// user groups
+model UserGroup {
+  id String @id @default(cuid())
+
+  name String @unique
+  description String?
+  users UserOnUserGroups[]
+  permissions PermissionsOnUserGroups[]
+
+}
+enum PermissionLabel {
+  CAN_MANAGE_FARMER_RECORDS
+  CAN_MANAGE_ITEM_INVENTORY
+  CAN_MANAGE_ITEM_INVENTORY_RECORDS
+  CAN_MANAGE_ITEM_INVENTORY_CONSUMPTION
+  CAN_MANAGE_USER_GROUPS
+}
+// permsissions 
+model Permission {
+  id String @id @default(cuid())
+
+  name String @unique
+  label PermissionLabel @unique
+  userGroups PermissionsOnUserGroups[]
+}
+
+model PermissionsOnUserGroups {
+  userGroup       UserGroup     @relation(fields: [userGroupId], references: [id])
+  userGroupId     String // relation scalar field (used in the `@relation` attribute above)
+  permission   Permission @relation(fields: [permissionId], references: [id])
+  permissionId String // relation scalar field (used in the `@relation` attribute above)
+  assignedAt DateTime @default(now())
+  assignedBy String
+
+  @@id([userGroupId, permissionId])
+}
+model UserOnUserGroups {
+  user       User     @relation(fields: [userId], references: [id])
+  userId     String // relation scalar field (used in the `@relation` attribute above)
+  userGroup  UserGroup @relation(fields: [userGroupId], references: [id])
+  userGroupId String // relation scalar field (used in the `@relation` attribute above)
+  assignedAt DateTime @default(now())
+  assignedBy String
+
+  @@id([userId, userGroupId])
+}
+
+// inventory
+model InventoryItemCondition {
+  id String @id @default(cuid())
+
+  name String @unique
+  rating Int? @default(0)
+  supplyRecords InventoryItemSupplyRecord[]
+  consumptionRecords InventoryItemConsumptionRecord[]
+}
+model InventoryItem {
+  id String @id @default(cuid())
+
+  name String @unique
+  description String?
+  growthPeriodInSecs Int
+  measurementUnitId String
+  minStockThreshold Int
+  inputOutputRatioId String @unique
+  supplyRecords InventoryItemSupplyRecord[]
+  consumptionRecords InventoryItemConsumptionRecord[]
+  inputOutputRatio InputOutputRatio  @relation(fields: [inputOutputRatioId], references: [id], onDelete: Cascade)
+
+}
+model InventoryItemSupplyRecord {
+  id String @id @default(cuid())
+  lastModifiedBy String
+  physicalParameters Json
+  entryDate DateTime @default(now())
+  addedBy String
+  totalAmount Int 
+  availableAmount Int 
+  inventoryItemId String
+  conditionId String
+  condition InventoryItemCondition @relation(fields: [conditionId], references: [id], onDelete: Cascade)
+  inventoryItem InventoryItem @relation(fields: [inventoryItemId], references: [id], onDelete: Cascade)
+
+  
+  supplierProfileId String?
+  amountConsumed InventoryItemRecordAmountConsumed[]
+}
+model InventoryItemRecordAmountConsumed {
+  id String @id @default(cuid())
+  amountTaken Int 
+  supplyRecordId String 
+  supplyRecord InventoryItemSupplyRecord @relation(fields: [supplyRecordId], references: [id], onDelete: Cascade)
+  consumptionRecordId String 
+  consumptionRecord InventoryItemConsumptionRecord @relation(fields: [consumptionRecordId], references: [id], onDelete: Cascade)
+}
+model InventoryItemConsumptionRecord {
+  id String @id @default(cuid())
+  addedBy String
+  lastModifiedBy String
+  amountConsumed InventoryItemRecordAmountConsumed[]
+  inventoryItemId String
+  produceConditionId String?
+  amountProduced Int? @default(0)
+  dateConsumed DateTime? @default(now()) //same as date planted
+  createdAt DateTime? @default(now())
+  updatedAt DateTime  @updatedAt
+  dateProduceWasRealized DateTime? 
+  produceCondition InventoryItemCondition? @relation(fields: [produceConditionId], references: [id])
+  inventoryItem InventoryItem @relation(fields: [inventoryItemId], references: [id], onDelete: Cascade)
+  addedByUser User @relation("addedByUser", fields: [addedBy], references: [id])
+  lastModifiedByUser User @relation("lastModifiedByUser",fields: [lastModifiedBy], references: [id])
+}
+model SupplierProfile { //farmer
+  id String @id @default(cuid())
+ 
+  userId String
+  creditLimitId String
+  paymentTermId String
+
+  paymentTerm PaymentTerm @relation(fields: [paymentTermId], references: [id], onDelete: Cascade)
+  creditLimit CreditLimit @relation(fields: [creditLimitId], references: [id], onDelete: Cascade)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId])
+}
+
+model InputOutputRatio {
+  id String @id @default(cuid())
+  input Int
+  output Int
+  inventoryItem InventoryItem?
+
+}
+model MeasurementUnit {
+  id String @id @default(cuid())
+
+  name String @unique
+  
+}
+model Report { //this will be used to generate a report that user can either view or download from csv from the data field
+  id String @id @default(cuid())
+
+  name String @unique
+  description String?
+  generatedBy String
+  generatedAt DateTime @default(now())
+  data Json  
+}
+model CreditLimit {
+  id String @id @default(cuid())
+
+  name String @unique
+  description String
+
+  supplierProfiles SupplierProfile[]
+  
+}
+model PaymentTerm {
+  id String @id @default(cuid())
+
+  name String @unique
+  description String
+  supplierProfiles SupplierProfile[]
+  
+}
+model Notification {
+  id String @id @default(cuid())
+  userId String
+
+  title String 
+  description String
+  details Json?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId])
+  
+}
+enum AppModuleCategory {
+  SETTINGS
+  INVENTORY_SUPPLY_MANAGEMENT
+  INVENTORY_CONSUMTION_MANAGEMENT
+  REPORTS
+  SUPPLIER_MANAGEMENT
+}
+model Audit {
+  id String @id @default(cuid())
+  invokerId String
+  
+  
+  summary String
+  details Json?
+  invokedAt DateTime @default(now())
+
+  invoker User @relation(fields: [invokerId], references: [id], onDelete: Cascade)
+
+  @@unique([invokerId])
+  
+}
+model UserInvitation {
+  id String @id @default(cuid())
+  email String
+  sentAt DateTime @default(now())
+
+}
+model GenerationPeriod {
+  id String @id @default(cuid())
+  name String @unique
+  description String?
+  startDate DateTime @default(now()) @unique
+  endDate DateTime  @unique
+
+}
+model NotificationSettings {
+  id String @id @default(cuid())
+  userGroupIdsToBeNotified Json? //e.g ["323234434ddd", "xxdwwew343"]
+  userIdsToBeNotified Json? //e.g ["323234434ddd", "xxdwwew343"]
+
+}
