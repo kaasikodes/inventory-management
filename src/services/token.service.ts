@@ -124,11 +124,16 @@ export const updateAccountForTokenMonitoringAccessToken = async ({
   userId: string;
 }) => {
   try {
-    const account = await db.account.update({
+    const account = await getAccountForTokenMonitoring({
+      refreshToken,
+      userId,
+    });
+    if (!account || !(account && account?.id)) {
+      throw new Error("Account not found");
+    }
+    const updatedAccount = await db.account.update({
       where: {
-        providerAccountId: userId,
-        id: refreshToken,
-        userId: userId,
+        id: account?.id,
       },
       data: {
         access_token: accessToken,
@@ -137,7 +142,7 @@ export const updateAccountForTokenMonitoringAccessToken = async ({
         access_token: true,
       },
     });
-    return account;
+    return updatedAccount;
   } catch (error) {
     throw error;
   }

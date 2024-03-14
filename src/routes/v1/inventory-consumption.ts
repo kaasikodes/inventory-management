@@ -11,8 +11,10 @@ import {
 } from "../../controllers/inventory-consumption.controller";
 import inventoryConsumptionPaths from "../../paths/inventory-consumption";
 import { addInventoryConditionSchema } from "../../validation/inventory-condition";
+import { recordAuditReport } from "../../middleware/audit";
 
 const inventoryConsumptionRoutes = (app: Router) => {
+  app.use(verifyJwTToken, recordAuditReport);
   app.patch(
     inventoryConsumptionPaths.updateInventoryConsumptionProduceInfo
       .path as string,

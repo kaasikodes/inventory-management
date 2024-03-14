@@ -6,10 +6,12 @@ export const createUserGroup = async ({
   name,
   description,
   permissionIds,
+  assignedBy,
 }: {
   name: string;
   description?: string;
   permissionIds?: string[];
+  assignedBy: string;
 }) => {
   try {
     const data = await db.userGroup.create({
@@ -25,21 +27,12 @@ export const createUserGroup = async ({
     });
     permissionIds &&
       permissionIds?.length > 0 &&
-      (await db.userGroup.update({
-        where: {
-          id: data.id,
-        },
-        data: {
-          permissions: {
-            connect: permissionIds?.map((permissionId) => ({
-              permissionId,
-              userGroupId_permissionId: {
-                permissionId,
-                userGroupId: data.id,
-              },
-            })),
-          },
-        },
+      (await db.permissionsOnUserGroups.createMany({
+        data: permissionIds?.map((permissionId) => ({
+          permissionId,
+          userGroupId: data.id,
+          assignedBy,
+        })),
       }));
     return data;
   } catch (error) {
@@ -55,21 +48,50 @@ export const updateUserGroup = async ({
     name: string;
     description?: string;
     permissionIds?: string[];
+    assignedBy: string;
   };
 }) => {
   try {
+    const group = await retrieveUserGroup({ id });
+    const permissonIdsToDisconnect = group?.permissions
+      .filter(
+        (permission) => !data.permissionIds?.includes(permission.permission.id)
+      )
+      .map((permission) => permission.permission.id);
+    const permissionIdsToConnect = data.permissionIds?.filter(
+      (permissionId) =>
+        !group?.permissions.some(
+          (permission) => permission.permission.id === permissionId
+        )
+    );
+    // remove permission
+    await db.permissionsOnUserGroups.deleteMany({
+      where: {
+        permissionId: {
+          in: permissonIdsToDisconnect,
+        },
+        userGroupId: id,
+      },
+    });
+    // update group & connect permissions
     const updatedGroup = await db.userGroup.update({
       where: {
         id,
       },
       data: {
-        ...data,
+        description: data.description,
+        name: data.name,
         permissions: {
-          connect: data.permissionIds?.map((permissionId) => ({
-            permissionId,
-            userGroupId_permissionId: {
+          connectOrCreate: permissionIdsToConnect?.map((permissionId) => ({
+            where: {
+              userGroupId_permissionId: {
+                userGroupId: id,
+                permissionId,
+              },
+            },
+            create: {
+              assignedBy: data.assignedBy,
               permissionId,
-              userGroupId: id,
             },
           })),
         },
@@ -114,7 +136,11 @@ export const retrieveUserGroup = async ({ id }: { id: string }) => {
         id: true,
         name: true,
         description: true,
-        permissions: true,
+        permissions: {
+          select: {
+            permission: true,
+          },
+        },
       },
     });
     return data;
@@ -158,7 +184,7 @@ export const retriveUserGroups = async ({
     return {
       data,
       metaData: {
-        hasNextPage: data.length > 0,
+        hasNextPage: data.length !== total, //TODO: Correct logic for hasNextPage in pagination, refer article or come up with a better solution
         lastIndex: cursor,
         total,
       },

@@ -107,7 +107,8 @@ export const retrievePaymentTerms = async ({
     return {
       data,
       metaData: {
-        hasNextPage: data.length > 0,
+        hasNextPage: data.length !== total, //TODO: Correct logic for hasNextPage in pagination, refer article or come up with a better solution
+
         lastIndex: cursor,
         total,
       },

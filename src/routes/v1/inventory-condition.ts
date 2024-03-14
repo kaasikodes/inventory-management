@@ -13,8 +13,10 @@ import {
   getInventoryItemConditions,
   removeInventoryItemCondition,
 } from "../../controllers/inventory-condition.controller";
+import { recordAuditReport } from "../../middleware/audit";
 
 const inventoryConditionRoutes = (app: Router) => {
+  app.use(verifyJwTToken, recordAuditReport);
   app.post(
     inventoryConditionPaths.addInventoryCondition.path as string,
     verifyJwTToken,

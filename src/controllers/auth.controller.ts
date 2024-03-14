@@ -66,7 +66,7 @@ export const resetPassword = async (
   const tokenHasExpired =
     pwdResetToken && new Date(pwdResetToken?.expires) < new Date();
   if (tokenHasExpired) {
-    return next(new AppError("Password reset token has expired", 400));
+    next(new AppError("Password reset token has expired", 400));
   }
 
   await deletePasswordResetToken({ id: pwdResetToken.id });
@@ -110,8 +110,7 @@ export const resetPassword = async (
     );
     return res.status(200).json(jsonReponse);
   } catch (error) {
-    console.log(error);
-    return next(error);
+    next(error);
   }
 };
 export const forgotPassword = async (
@@ -136,7 +135,7 @@ export const forgotPassword = async (
         )
       );
   } catch (error) {
-    console.log(error);
+    next(error);
   }
 };
 export const changeAuthUserPassword = async (
@@ -251,7 +250,6 @@ export const loginUser = async (
     );
     return res.status(200).json(jsonReponse);
   } catch (error) {
-    console.log(error);
     return next(error);
   }
 };
@@ -260,29 +258,14 @@ export const newUserAccessToken = async (
   res: Response,
   next: NextFunction
 ) => {
-  let user: TJwtUserPayload | undefined = undefined;
+  let user: TJwtUserPayload | undefined = req.user;
   let refreshToken = req?.headers?.["cookie"]?.split("=")?.[1];
   if (!refreshToken) {
     return next(new AppError("No Refresh token", 401));
   }
-  jwt.verify(
-    refreshToken,
-    config.REFRESH_TOKEN_SECRET,
-    (err: unknown, _user: unknown) => {
-      user = _user as TJwtUserPayload | undefined;
-      if (err) {
-        return next(
-          new AppError("Invalid Refresh token", 401, [
-            { token: "Refresh Token present but invalid" },
-          ])
-        );
-      }
 
-      next();
-    }
-  );
   if (user === undefined) {
-    return next(new AppError("User is absent from Refresh token", 401));
+    return next(new AppError("User__ is absent from Refresh token", 401));
   }
   const { email, id, name } = user as TJwtUserPayload;
   // create access and refresh token
@@ -309,7 +292,6 @@ export const newUserAccessToken = async (
     );
     return res.status(200).json(jsonReponse);
   } catch (error) {
-    console.log(error);
     return next(error);
   }
 };
@@ -401,7 +383,6 @@ export const verifyUser = async (
     );
     return res.status(200).json(jsonReponse);
   } catch (error) {
-    console.log(error);
     return next(error);
   }
 };
@@ -434,6 +415,6 @@ export const registerUser = async (
         )
       );
   } catch (error) {
-    console.log(error);
+    next(error);
   }
 };

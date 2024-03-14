@@ -2,105 +2,193 @@ import { NextFunction, Request, Response } from "express";
 import { z } from "zod";
 import {
   addUserSchema,
+  assignMultipleUsersToGroupSchema,
   changeUserStatusInBulkSchema,
   editUserSchema,
   importUsersSchema,
 } from "../validation/user";
 import {
+  assignMultipleUsersToGroup,
   changeUserStatusInBulk,
   createMultipleUsers,
-  createUser,
   deleteUser,
   getUserById,
-  retriveUsers,
+  retrieveUsers,
   updateUser,
 } from "../services/user.service";
 import { hashPassword } from "../services/auth.service";
 import { v4 as uuidv4 } from "uuid";
-import { AppJSONResponse } from "../types/reponse";
+import {
+  AppJSONResponse,
+  AppJSONResponseWithPagination,
+} from "../types/reponse";
 import { sendAddedUserPasswordGeneratedBySystem } from "../services/mail.service";
 import { exportCsvFile } from "../lib/file";
 import { UserStatus } from "@prisma/client";
 import { createOrUpdateAddress } from "../services/address.service";
 import { executeAddUserSteps } from "../lib/utils/user";
+import { AppError } from "../types/error";
+import { TPaginationQuery, TSearchQuery } from "../types/generic";
 
-export const exportUserImportTemplate = async (req: Request, res: Response) => {
-  const csvData = [
-    {
-      name: "John Doe",
-      email: "john doe",
-      status: "ACTIVE, INACTIVE,  PENDING,  BLACKLISTED",
-    },
-  ];
-  return exportCsvFile({ csvData, fileName: "user-import-template" })(req, res);
+export const exportUserImportTemplate = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const csvData = [
+      {
+        name: "John Doe",
+        email: "john doe",
+        status: "ACTIVE, INACTIVE,  PENDING,  BLACKLISTED",
+      },
+    ];
+    return exportCsvFile({ csvData, fileName: "user-import-template" })(
+      req,
+      res
+    );
+  } catch (error) {
+    next(error);
+  }
+};
+export const addUsersToGroup = async (
+  req: Request<{}, {}, z.infer<typeof assignMultipleUsersToGroupSchema>>,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { groupId, userIds } = req.body;
+    const authUser = req.user;
+    if (!authUser) {
+      throw new AppError("Authenticated User missing", 401);
+    }
+    const users = await assignMultipleUsersToGroup({
+      groupId,
+      userIds,
+      assignedBy: authUser.id,
+    });
+    if (users.count === 0) {
+      return res
+        .status(200)
+        .json(new AppJSONResponse("No users were added to the group!", null));
+    }
+    const jsonReponse = new AppJSONResponse(
+      `${users.count} user(s) were added successfully to group!`,
+      {
+        count: users.count,
+      }
+    );
+    return res.status(200).json(jsonReponse);
+  } catch (error) {
+    next(error);
+  }
 };
 export const updateStatusOfUsersInBulk = async (
   req: Request<{}, {}, z.infer<typeof changeUserStatusInBulkSchema>>,
-  res: Response
+  res: Response,
+  next: NextFunction
 ) => {
-  const { status, userIds } = req.body;
-  const users = await changeUserStatusInBulk({
-    status,
-    userIds,
-  });
-  if (users.count === 0) {
-    return res
-      .status(200)
-      .json(new AppJSONResponse("No user status were updated!", null));
-  }
-  const jsonReponse = new AppJSONResponse(
-    `${users.count} user(s) status updated successfully!`,
-    {
-      count: users.count,
+  try {
+    const { status, userIds } = req.body;
+    const users = await changeUserStatusInBulk({
+      status,
+      userIds,
+    });
+    if (users.count === 0) {
+      return res
+        .status(200)
+        .json(new AppJSONResponse("No user status were updated!", null));
     }
-  );
-  return res.status(200).json(jsonReponse);
+    const jsonReponse = new AppJSONResponse(
+      `${users.count} user(s) status updated successfully!`,
+      {
+        count: users.count,
+      }
+    );
+    return res.status(200).json(jsonReponse);
+  } catch (error) {
+    next(error);
+  }
 };
 export const removeUser = async (
   req: Request<{ id: string }>,
-  res: Response
+  res: Response,
+  next: NextFunction
 ) => {
-  const { id } = req.params;
-  const user = await deleteUser({
-    id,
-  });
-  if (user === null) {
-    return res.status(200).json(new AppJSONResponse("No user found!", null));
+  try {
+    const { id } = req.params;
+    const user = await deleteUser({
+      id,
+    });
+    if (user === null) {
+      return res.status(200).json(new AppJSONResponse("No user found!", null));
+    }
+    const jsonReponse = new AppJSONResponse("User deleted successfully!", {
+      ...user,
+    });
+    return res.status(200).json(jsonReponse);
+  } catch (error) {
+    next(error);
   }
-  const jsonReponse = new AppJSONResponse("User deleted successfully!", {
-    ...user,
-  });
-  return res.status(200).json(jsonReponse);
 };
-export const getUser = async (req: Request<{ id: string }>, res: Response) => {
-  const { id } = req.params;
-  const user = await getUserById({
-    id,
-  });
-  if (user === null) {
-    return res.status(200).json(new AppJSONResponse("No user found!", null));
-  }
-  const jsonReponse = new AppJSONResponse("User retrieved successfully!", {
-    email: user.email,
-    id: user.id,
-    name: user.name,
-  });
-  return res.status(200).json(jsonReponse);
-};
-export const getUsers = async (req: Request, res: Response) => {
-  const users = await retriveUsers();
-
-  const jsonReponse = new AppJSONResponse("User retrieved successfully!", {
-    users: users?.map((user) => ({
+export const getUser = async (
+  req: Request<{ id: string }>,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { id } = req.params;
+    const user = await getUserById({
+      id,
+    });
+    if (user === null) {
+      return res.status(200).json(new AppJSONResponse("No user found!", null));
+    }
+    const jsonReponse = new AppJSONResponse("User retrieved successfully!", {
+      email: user.email,
       id: user.id,
       name: user.name,
-      email: user.email,
-      image: user.image,
-      status: user.status,
-    })),
-    totalCount: users.length,
-  });
-  return res.status(200).json(jsonReponse);
+    });
+    return res.status(200).json(jsonReponse);
+  } catch (error) {
+    next(error);
+  }
+};
+export const getUsers = async (
+  req: Request<
+    {},
+    {},
+    {},
+    TPaginationQuery & TSearchQuery & { groupIds?: string[] }
+  >,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { lastItemIndex, pageSize, search, groupIds } = req.query;
+
+    const { metaData, data } = await retrieveUsers({
+      pagination: {
+        lastItemIndex,
+        pageSize,
+      },
+      search,
+      groupIds,
+    });
+
+    const jsonReponse = new AppJSONResponseWithPagination(
+      "Users retrieved successfully!",
+      {
+        lastItemIndex: metaData.lastIndex,
+        result: data,
+        total: metaData.total,
+        hasNextPage: metaData.hasNextPage,
+      }
+    );
+    return res.status(200).json(jsonReponse);
+  } catch (error) {
+    next(error);
+  }
 };
 export const importUsers = async (
   req: Request<{}, {}, z.infer<typeof importUsersSchema>>,

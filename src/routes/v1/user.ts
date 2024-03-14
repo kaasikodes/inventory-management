@@ -3,6 +3,7 @@ import userPaths from "../../paths/user";
 import { verifyJwTToken } from "../../middleware/auth";
 import {
   addUserSchema,
+  assignMultipleUsersToGroupSchema,
   changeUserStatusInBulkSchema,
   editUserSchema,
   importUsersSchema,
@@ -13,6 +14,7 @@ import {
 } from "../../middleware/validation";
 import {
   addUser,
+  addUsersToGroup,
   editUser,
   exportUserImportTemplate,
   getUser,
@@ -24,8 +26,11 @@ import {
 import { fileUpload } from "../../lib/file";
 import { parseCsvFileToRequestBody } from "../../middleware/file";
 import { checkUniquenessOfEmailsDuringImport } from "../../middleware/user";
+import { recordAuditReport } from "../../middleware/audit";
 
 const userRoutes = (app: Router) => {
+  app.use(verifyJwTToken, recordAuditReport);
+
   app.post(
     userPaths.importUsers.path as string,
     verifyJwTToken,
@@ -38,6 +43,12 @@ const userRoutes = (app: Router) => {
     validateRequestBody(importUsersSchema),
     checkUniquenessOfEmailsDuringImport,
     importUsers
+  );
+  app.patch(
+    userPaths.assignUsersToGroup.path as string,
+    verifyJwTToken,
+    validateRequestBody(assignMultipleUsersToGroupSchema),
+    addUsersToGroup
   );
   app.patch(
     userPaths.changeUserStatusInBulk.path as string,

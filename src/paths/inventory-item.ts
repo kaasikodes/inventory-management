@@ -22,11 +22,11 @@ const inventoryItemPaths: TPath = {
     action: "User deleted inventory item!",
   },
   getInventoryItemImportTemplate: {
-    path: "/inventory-item/import-template",
+    path: "/inventory-item/bulk/template",
     action: "User accessed inventory item import template!",
   },
   importInventoryItems: {
-    path: "/inventory-item/import",
+    path: "/inventory-item/bulk/import",
     action: "User imported inventory items!",
   },
 };

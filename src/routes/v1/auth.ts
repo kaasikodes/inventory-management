@@ -48,7 +48,11 @@ const authRoutes = (app: Router) => {
     validateRequestBody(resetPasswordSchema),
     resetPassword
   );
-  app.get(authPaths.newAccessToken.path as string, newUserAccessToken);
+  app.get(
+    authPaths.newAccessToken.path as string,
+    verifyJwTToken,
+    newUserAccessToken
+  );
 
   app.get(authPaths.logout.path as string, verifyJwTToken, logoutUser);
   app.get(

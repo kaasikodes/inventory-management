@@ -13,8 +13,10 @@ import {
   getReports,
   removeReport,
 } from "../../controllers/report.controller";
+import { recordAuditReport } from "../../middleware/audit";
 
 const reportRoutes = (app: Router) => {
+  app.use(verifyJwTToken, recordAuditReport);
   app.delete(
     reportPaths.deleteReport.path as string,
     verifyJwTToken,

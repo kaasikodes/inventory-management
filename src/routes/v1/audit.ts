@@ -1,6 +1,5 @@
 import { Router } from "express";
 import { verifyJwTToken } from "../../middleware/auth";
-
 import auditPaths from "../../paths/audit";
 import {
   getAuditRecord,

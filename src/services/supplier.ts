@@ -12,6 +12,7 @@ export const createSupplierProfile = async ({
   userId: string;
 }) => {
   try {
+    // TODO: Create middle ware to check if creditLimit and paymentTerm exist
     const data = await db.supplierProfile.create({
       data: {
         creditLimitId,

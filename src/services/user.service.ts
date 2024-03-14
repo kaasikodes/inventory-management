@@ -1,5 +1,7 @@
 import { UserStatus } from "@prisma/client";
 import { db } from "../lib/database";
+import { TPaginationQuery } from "../types/generic";
+import config from "../_config";
 
 export const updateUserPassword = async ({
   userId,
@@ -30,6 +32,42 @@ export const updateUserPassword = async ({
   }
 };
 
+export const assignMultipleUsersToGroup = async ({
+  groupId,
+  userIds,
+  assignedBy,
+}: {
+  userIds: string[];
+  groupId: string;
+  assignedBy: string;
+}) => {
+  try {
+    const group = await db.userGroup.update({
+      where: {
+        id: groupId,
+      },
+      data: {
+        users: {
+          connectOrCreate: userIds.map((userId) => ({
+            create: {
+              assignedBy,
+              userId,
+            },
+            where: {
+              userId_userGroupId: {
+                userGroupId: groupId,
+                userId,
+              },
+            },
+          })),
+        },
+      },
+    });
+    return { count: userIds.length, group };
+  } catch (error) {
+    throw error;
+  }
+};
 export const changeUserStatusInBulk = async ({
   status,
   userIds,
@@ -113,10 +151,51 @@ export const createMultipleUsers = async ({
     throw error;
   }
 };
-export const retriveUsers = async () => {
-  // TODO: Implement authentication
+
+export const retrieveUsers = async ({
+  pagination = {},
+  search,
+  groupIds,
+}: {
+  pagination?: TPaginationQuery;
+  search?: string;
+  groupIds?: string[];
+}) => {
+  const { lastItemIndex, pageSize: _pageSize } = pagination;
+  const pageSize = _pageSize ? +_pageSize : config.DEFAULT_PAGE_SIZE;
   try {
-    const user = await db.user.findMany({
+    const total = await db.user.count({
+      where: {
+        name: { contains: search },
+        userGroups: {
+          some: {
+            userGroupId: {
+              in: groupIds,
+            },
+          },
+        },
+      },
+    });
+    const data = await db.user.findMany({
+      take: pageSize,
+      ...(lastItemIndex
+        ? {
+            skip: 1, // Skip the cursor
+            cursor: {
+              id: lastItemIndex,
+            },
+          }
+        : {}),
+      where: {
+        name: { contains: search },
+        userGroups: {
+          some: {
+            userGroupId: {
+              in: groupIds,
+            },
+          },
+        },
+      },
       select: {
         id: true,
         name: true,
@@ -127,11 +206,22 @@ export const retriveUsers = async () => {
         emailVerified: true,
       },
     });
-    return user;
+
+    const lastItemInResults = data[pageSize - 1]; // Remember: zero-based index! :)
+    const cursor = lastItemInResults?.id;
+    return {
+      data,
+      metaData: {
+        hasNextPage: data.length !== total, //TODO: Correct logic for hasNextPage in pagination, refer article or come up with a better solution
+        lastIndex: cursor,
+        total,
+      },
+    };
   } catch (error) {
     throw error;
   }
 };
+
 export const deleteUser = async ({ id }: { id: string }) => {
   try {
     const user = await db.user.delete({

@@ -20,15 +20,15 @@ const userPaths = {
     action: "User deleted user!",
   },
   changeUserStatusInBulk: {
-    path: "/users/change-status",
+    path: "/user/change-status",
     action: "User changed user status in bulk!",
   },
   getUserImportTemplate: {
-    path: "/user/import-template",
+    path: "/user/bulk/template",
     action: "User accessed user import template!",
   },
   importUsers: {
-    path: "/user/import",
+    path: "/user/bulk/import",
     action: "User imported users!",
   },
   assignUsersToGroup: {

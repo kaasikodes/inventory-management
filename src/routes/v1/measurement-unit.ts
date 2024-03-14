@@ -12,8 +12,10 @@ import {
   addMeasurementUnitSchema,
   editMeasurementUnitSchema,
 } from "../../validation/measurement-unit";
+import { recordAuditReport } from "../../middleware/audit";
 
 const measurementUnitRoutes = (app: Router) => {
+  app.use(verifyJwTToken, recordAuditReport);
   app.post(
     measurementUnitPaths.addMeasurementUnit.path as string,
     verifyJwTToken,

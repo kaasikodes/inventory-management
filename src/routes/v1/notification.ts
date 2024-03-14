@@ -9,8 +9,10 @@ import {
   removeNotification,
 } from "../../controllers/notification.controller";
 import { saveNotificationSettings } from "../../services/notification";
+import { recordAuditReport } from "../../middleware/audit";
 
 const notificationRoutes = (app: Router) => {
+  app.use(verifyJwTToken, recordAuditReport);
   app.get(
     notificationPaths.getNotification.path as string,
     verifyJwTToken,

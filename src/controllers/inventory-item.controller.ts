@@ -245,8 +245,8 @@ export const exportInventoryImportTemplate = async (
   const measurementUnits = await retrieveMeasurementUnits({});
   const csvData: TImportInventoryItem[] = [
     {
-      name: "John Doe",
-      description: "john doe",
+      name: "Groudnut",
+      description: "This is a crop that will be used to produce peanuts ...",
       input: 2,
       output: 2,
       measurementUnit: measurementUnits.data.map(({ name }) => name).join(","),

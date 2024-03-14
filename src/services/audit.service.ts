@@ -33,7 +33,8 @@ export const createAuditRecord = async ({
         summary: true,
         invokedAt: true,
         invoker: true,
-        details: true,
+        routePath: true,
+        action: true,
       },
     });
     return data;
@@ -79,7 +80,8 @@ export const retrieveAuditRecords = async ({
         summary: true,
         invokedAt: true,
         invoker: true,
-        details: true,
+        routePath: true,
+        action: true,
       },
     });
 
@@ -103,6 +105,9 @@ export const retrieveAuditRecord = async ({ id }: { id: string }) => {
     const data = await db.audit.findUnique({
       where: {
         id,
+      },
+      include: {
+        invoker: true,
       },
     });
     return data;

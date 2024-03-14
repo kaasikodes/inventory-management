@@ -15,8 +15,10 @@ import {
   getUserGroups,
   removeUserGroup,
 } from "../../controllers/user-group.controller";
+import { recordAuditReport } from "../../middleware/audit";
 
 const userGroupRoutes = (app: Router) => {
+  app.use(verifyJwTToken, recordAuditReport);
   app.post(
     userGroupPaths.addUserGroup.path as string,
     verifyJwTToken,

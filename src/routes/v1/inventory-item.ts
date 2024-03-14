@@ -1,29 +1,11 @@
 import { Router } from "express";
-import userPaths from "../../paths/user";
 import { verifyJwTToken } from "../../middleware/auth";
-import {
-  addUserSchema,
-  changeUserStatusInBulkSchema,
-  editUserSchema,
-  importUsersSchema,
-} from "../../validation/user";
 import {
   validateRequestBody,
   validateRequestSingleFile,
 } from "../../middleware/validation";
-import {
-  addUser,
-  editUser,
-  exportUserImportTemplate,
-  getUser,
-  getUsers,
-  importUsers,
-  removeUser,
-  updateStatusOfUsersInBulk,
-} from "../../controllers/user.controller";
 import { fileUpload } from "../../lib/file";
 import { parseCsvFileToRequestBody } from "../../middleware/file";
-import { checkUniquenessOfEmailsDuringImport } from "../../middleware/user";
 import inventoryItemPaths from "../../paths/inventory-item";
 import {
   addInventoryItemSchema,
@@ -40,8 +22,10 @@ import {
   removeInventoryItem,
 } from "../../controllers/inventory-item.controller";
 import { convertImportRequestBodyToAcceptableInventoryItemFormat } from "../../middleware/inventory-item";
+import { recordAuditReport } from "../../middleware/audit";
 
 const inventoryItemRoutes = (app: Router) => {
+  app.use(verifyJwTToken, recordAuditReport);
   app.post(
     inventoryItemPaths.importInventoryItems.path as string,
     verifyJwTToken,
@@ -54,6 +38,11 @@ const inventoryItemRoutes = (app: Router) => {
     convertImportRequestBodyToAcceptableInventoryItemFormat, //TODO: Do same for user import
     validateRequestBody(importInventoryItemsSchema),
     importInventoryItems
+  );
+  app.get(
+    inventoryItemPaths.getInventoryItemImportTemplate.path as string,
+    verifyJwTToken,
+    exportInventoryImportTemplate
   );
 
   app.post(
@@ -82,7 +71,7 @@ const inventoryItemRoutes = (app: Router) => {
   app.get(
     inventoryItemPaths.importInventoryItems.path as string,
     verifyJwTToken,
-    exportInventoryImportTemplate
+    importInventoryItems
   );
   app.delete(
     inventoryItemPaths.deleteInventoryItem.path as string,

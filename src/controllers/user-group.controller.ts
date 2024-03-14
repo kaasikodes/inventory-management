@@ -37,7 +37,7 @@ export const getUserGroups = async (
     });
 
     const jsonReponse = new AppJSONResponseWithPagination(
-      "User group retrieved successfully!",
+      "User groups retrieved successfully!",
       {
         lastItemIndex: metaData.lastIndex,
         result: data,
@@ -63,10 +63,8 @@ export const getUserGroup = async (
     });
 
     const jsonReponse = new AppJSONResponse(
-      "User group retrieved successfully!",
-      {
-        data,
-      }
+      data ? "User group retrieved successfully!" : "User group not found!",
+      data
     );
     return res.status(200).json(jsonReponse);
   } catch (error) {
@@ -105,10 +103,14 @@ export const editUserGroup = async (
     const { id } = req.params;
     // TODO: Add middleware to validate permssionIds sent are actually present in the database
     const { name, description, permissionIds } = req.body;
+    const authUser = req.user;
+    if (!authUser) {
+      throw new AppError("User not found", 404);
+    }
 
-    const user = await updateUserGroup({
+    const group = await updateUserGroup({
       id,
-      data: { name, description, permissionIds },
+      data: { name, description, permissionIds, assignedBy: authUser.id },
     });
 
     const jsonReponse = new AppJSONResponse(
@@ -116,7 +118,7 @@ export const editUserGroup = async (
       {
         name,
         description,
-        id: user.id,
+        id: group.id,
       }
     );
     return res.status(200).json(jsonReponse);
@@ -159,11 +161,16 @@ export const addUserGroup = async (
 ) => {
   try {
     const { name, description, permissionIds } = req.body;
+    const authUser = req.user;
+    if (!authUser) {
+      throw new AppError("User not found", 404);
+    }
 
     const user = await createUserGroup({
       name,
       description,
       permissionIds,
+      assignedBy: authUser?.id,
     });
 
     const jsonReponse = new AppJSONResponse(

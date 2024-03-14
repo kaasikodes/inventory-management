@@ -11,6 +11,10 @@ export const importUsersSchema = z.object({
   ),
 });
 
+export const assignMultipleUsersToGroupSchema = z.object({
+  groupId: z.string(),
+  userIds: z.array(z.string()),
+});
 export const changeUserStatusInBulkSchema = z.object({
   status: z.enum(["ACTIVE", "INACTIVE", "BLACKLISTED", "PENDING"]),
   userIds: z.array(z.string()),

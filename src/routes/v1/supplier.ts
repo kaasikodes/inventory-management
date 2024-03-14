@@ -12,8 +12,10 @@ import {
   createSupplierProfileSchema,
   updateSupplierProfileSchema,
 } from "../../validation/supplier";
+import { recordAuditReport } from "../../middleware/audit";
 
 const supplierProfileRoutes = (app: Router) => {
+  app.use(verifyJwTToken, recordAuditReport);
   app.post(
     supplierProfilePaths.addSupplierProfile.path as string,
     verifyJwTToken,

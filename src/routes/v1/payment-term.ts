@@ -12,8 +12,10 @@ import {
   addPaymentTermSchema,
   updatePaymentTermSchema,
 } from "../../validation/payment-term";
+import { recordAuditReport } from "../../middleware/audit";
 
 const paymentTermRoutes = (app: Router) => {
+  app.use(verifyJwTToken, recordAuditReport);
   app.post(
     paymentTermPaths.addPaymentTerm.path as string,
     verifyJwTToken,

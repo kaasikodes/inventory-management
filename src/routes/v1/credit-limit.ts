@@ -12,8 +12,10 @@ import {
   addCreditLimitSchema,
   updateCreditLimitSchema,
 } from "../../validation/credit-limit";
+import { recordAuditReport } from "../../middleware/audit";
 
 const creditLimitRoutes = (app: Router) => {
+  app.use(verifyJwTToken, recordAuditReport);
   app.post(
     creditLimitPaths.addCreditLimit.path as string,
     verifyJwTToken,

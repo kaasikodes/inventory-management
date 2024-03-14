@@ -12,8 +12,10 @@ import {
   getGenerationPeriods,
   removeGenerationPeriod,
 } from "../../controllers/generation-period.controller";
+import { recordAuditReport } from "../../middleware/audit";
 
 const generationPeriodRoutes = (app: Router) => {
+  app.use(verifyJwTToken, recordAuditReport);
   app.post(
     generationPeriodPaths.addGenerationPeriod.path as string,
     verifyJwTToken,

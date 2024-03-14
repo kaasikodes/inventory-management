@@ -129,9 +129,9 @@ model Permission {
 }
 
 model PermissionsOnUserGroups {
-  userGroup       UserGroup     @relation(fields: [userGroupId], references: [id])
+  userGroup       UserGroup?     @relation(fields: [userGroupId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   userGroupId     String // relation scalar field (used in the `@relation` attribute above)
-  permission   Permission @relation(fields: [permissionId], references: [id])
+  permission   Permission? @relation(fields: [permissionId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   permissionId String // relation scalar field (used in the `@relation` attribute above)
   assignedAt DateTime @default(now())
   assignedBy String
