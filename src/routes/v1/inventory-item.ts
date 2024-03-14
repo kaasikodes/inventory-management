@@ -43,7 +43,7 @@ import { convertImportRequestBodyToAcceptableInventoryItemFormat } from "../../m
 
 const inventoryItemRoutes = (app: Router) => {
   app.post(
-    inventoryItemPaths.importInventoryItems,
+    inventoryItemPaths.importInventoryItems.path as string,
     verifyJwTToken,
     fileUpload.single("file"),
     validateRequestSingleFile({
@@ -57,35 +57,35 @@ const inventoryItemRoutes = (app: Router) => {
   );
 
   app.post(
-    inventoryItemPaths.addInventoryItem,
+    inventoryItemPaths.addInventoryItem.path as string,
     verifyJwTToken,
     validateRequestBody(addInventoryItemSchema),
     addInventoryItem
   );
   app.patch(
-    inventoryItemPaths.updateInventoryItem,
+    inventoryItemPaths.updateInventoryItem.path as string,
     verifyJwTToken,
     validateRequestBody(editInventoryItemSchema),
     editInventoryItem
   );
 
   app.get(
-    inventoryItemPaths.getInventoryItem,
+    inventoryItemPaths.getInventoryItem.path as string,
     verifyJwTToken,
     getInventoryItem
   );
   app.get(
-    inventoryItemPaths.getInventoryItems,
+    inventoryItemPaths.getInventoryItems.path as string,
     verifyJwTToken,
     getInventoryItems
   );
   app.get(
-    inventoryItemPaths.importInventoryItems,
+    inventoryItemPaths.importInventoryItems.path as string,
     verifyJwTToken,
     exportInventoryImportTemplate
   );
   app.delete(
-    inventoryItemPaths.deleteInventoryItem,
+    inventoryItemPaths.deleteInventoryItem.path as string,
     verifyJwTToken,
     removeInventoryItem
   );

@@ -15,23 +15,27 @@ import {
 
 const creditLimitRoutes = (app: Router) => {
   app.post(
-    creditLimitPaths.addCreditLimit,
+    creditLimitPaths.addCreditLimit.path as string,
     verifyJwTToken,
     validateRequestBody(addCreditLimitSchema),
     addCreditLimit
   );
   app.delete(
-    creditLimitPaths.deleteCreditLimit,
+    creditLimitPaths.deleteCreditLimit.path as string,
     verifyJwTToken,
     removeCreditLimit
   );
   app.put(
-    creditLimitPaths.updateCreditLimit,
+    creditLimitPaths.updateCreditLimit.path as string,
     verifyJwTToken,
     validateRequestBody(updateCreditLimitSchema),
     editCreditLimit
   );
-  app.get(creditLimitPaths.getCreditLimits, verifyJwTToken, getCreditLimits);
+  app.get(
+    creditLimitPaths.getCreditLimits.path as string,
+    verifyJwTToken,
+    getCreditLimits
+  );
 };
 
 export default creditLimitRoutes;

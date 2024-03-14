@@ -15,30 +15,42 @@ import {
 } from "../../controllers/report.controller";
 
 const reportRoutes = (app: Router) => {
-  app.delete(reportPaths.deleteReport, verifyJwTToken, removeReport);
-  app.get(reportPaths.getReport, verifyJwTToken, getReport);
-  app.get(reportPaths.getReports, verifyJwTToken, getReports);
-  app.get(reportPaths.downloadReport, verifyJwTToken, exportReport);
-  app.post(reportPaths.generateReport, verifyJwTToken, generateReport);
-  app.patch(reportPaths.editReport, verifyJwTToken, editReport);
+  app.delete(
+    reportPaths.deleteReport.path as string,
+    verifyJwTToken,
+    removeReport
+  );
+  app.get(reportPaths.getReport.path as string, verifyJwTToken, getReport);
+  app.get(reportPaths.getReports.path as string, verifyJwTToken, getReports);
+  app.get(
+    reportPaths.downloadReport.path as string,
+    verifyJwTToken,
+    exportReport
+  );
+  app.post(
+    reportPaths.generateReport.path as string,
+    verifyJwTToken,
+    generateReport
+  );
+  app.patch(reportPaths.editReport.path as string, verifyJwTToken, editReport);
   //   analytics
   app.get(
-    reportPaths.analytics.consumptionGraph,
+    reportPaths.analyticsConsumptionGraph.path,
     verifyJwTToken,
     getConsumptionGraph
   );
   app.get(
-    reportPaths.analytics.productionGraph,
+    reportPaths.analyticsProductionGraph.path,
     verifyJwTToken,
     getProductionGraph
   );
   app.get(
-    reportPaths.analytics.productionAmountVariationGraph,
+    reportPaths.analyticsProductionAmountVariationGraph.path,
     verifyJwTToken,
     getProductionAmountVariationGraph
   );
   app.get(
-    reportPaths.analytics.productionMaturityVariationGraph,
+    reportPaths.analyticsProductionMaturityVariationGraph.path,
     verifyJwTToken,
     getProductionMaturityVariationGraph
   );

@@ -1,11 +1,34 @@
-const inventoryItemPaths = {
-  addInventoryItem: "/add-inventory-item",
-  getInventoryItem: "/inventory-item/:id",
-  getInventoryItems: "/inventory-items",
-  updateInventoryItem: "/inventory-item/edit/:id",
-  deleteInventoryItem: "/inventory-item/delete/:id",
-  getInventoryItemImportTemplate: "/inventory-item/import/template",
-  importInventoryItems: "/inventory-items/import",
+import { TPath } from "../types/path";
+
+const inventoryItemPaths: TPath = {
+  addInventoryItem: {
+    path: "/add-inventory-item",
+    action: "User added inventory item!",
+  },
+  getInventoryItem: {
+    path: "/inventory-item/:id",
+    action: "User accessed inventory item!",
+  },
+  getInventoryItems: {
+    path: "/inventory-items",
+    action: "User accessed inventory items!",
+  },
+  updateInventoryItem: {
+    path: "/inventory-item/edit/:id",
+    action: "User updated inventory item!",
+  },
+  deleteInventoryItem: {
+    path: "/inventory-item/delete/:id",
+    action: "User deleted inventory item!",
+  },
+  getInventoryItemImportTemplate: {
+    path: "/inventory-item/import-template",
+    action: "User accessed inventory item import template!",
+  },
+  importInventoryItems: {
+    path: "/inventory-item/import",
+    action: "User imported inventory items!",
+  },
 };
 
 export default inventoryItemPaths;

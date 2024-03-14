@@ -8,8 +8,8 @@ import {
 } from "../../controllers/audit.controller";
 
 const auditRoutes = (app: Router) => {
-  app.get(auditPaths.getAudit, verifyJwTToken, getAuditRecord);
-  app.get(auditPaths.getAudits, verifyJwTToken, getAuditRecords);
+  app.get(auditPaths.getAudit.path as string, verifyJwTToken, getAuditRecord);
+  app.get(auditPaths.getAudits.path as string, verifyJwTToken, getAuditRecords);
 };
 
 export default auditRoutes;

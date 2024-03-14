@@ -161,16 +161,21 @@ export const importUsers = async (
 };
 export const addUser = async (
   req: Request<{}, {}, z.infer<typeof addUserSchema>>,
-  res: Response
+  res: Response,
+  next: NextFunction
 ) => {
-  const data = req.body;
-  const user = await executeAddUserSteps(data);
-  const jsonReponse = new AppJSONResponse("User created successfully!", {
-    email: user.email,
-    id: user.id,
-    name: user.name,
-  });
-  return res.status(200).json(jsonReponse);
+  try {
+    const data = req.body;
+    const user = await executeAddUserSteps(data);
+    const jsonReponse = new AppJSONResponse("User created successfully!", {
+      email: user.email,
+      id: user.id,
+      name: user.name,
+    });
+    return res.status(200).json(jsonReponse);
+  } catch (error) {
+    next(error);
+  }
 };
 
 export const editUser = async (

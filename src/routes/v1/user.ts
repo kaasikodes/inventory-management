@@ -27,7 +27,7 @@ import { checkUniquenessOfEmailsDuringImport } from "../../middleware/user";
 
 const userRoutes = (app: Router) => {
   app.post(
-    userPaths.importUsers,
+    userPaths.importUsers.path as string,
     verifyJwTToken,
     fileUpload.single("file"),
     validateRequestSingleFile({
@@ -40,32 +40,33 @@ const userRoutes = (app: Router) => {
     importUsers
   );
   app.patch(
-    userPaths.changeUserStatusInBulk,
+    userPaths.changeUserStatusInBulk.path as string,
     verifyJwTToken,
     validateRequestBody(changeUserStatusInBulkSchema),
     updateStatusOfUsersInBulk
   );
   app.post(
-    userPaths.addUser,
+    userPaths.addUser.path as string,
     verifyJwTToken,
     validateRequestBody(addUserSchema),
+
     addUser
   );
   app.patch(
-    userPaths.updateUser,
+    userPaths.updateUser.path as string,
     verifyJwTToken,
     validateRequestBody(editUserSchema),
     editUser
   );
 
-  app.get(userPaths.getUser, verifyJwTToken, getUser);
-  app.get(userPaths.getUsers, verifyJwTToken, getUsers);
+  app.get(userPaths.getUser.path as string, verifyJwTToken, getUser);
+  app.get(userPaths.getUsers.path as string, verifyJwTToken, getUsers);
   app.get(
-    userPaths.getUserImportTemplate,
+    userPaths.getUserImportTemplate.path as string,
     verifyJwTToken,
     exportUserImportTemplate
   );
-  app.delete(userPaths.deleteUser, verifyJwTToken, removeUser);
+  app.delete(userPaths.deleteUser.path as string, verifyJwTToken, removeUser);
 };
 
 export default userRoutes;

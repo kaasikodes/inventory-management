@@ -11,24 +11,28 @@ import {
 import { saveNotificationSettings } from "../../services/notification";
 
 const notificationRoutes = (app: Router) => {
-  app.get(notificationPaths.getNotification, verifyJwTToken, getNotification);
   app.get(
-    notificationPaths.getNotifications,
+    notificationPaths.getNotification.path as string,
+    verifyJwTToken,
+    getNotification
+  );
+  app.get(
+    notificationPaths.getNotifications.path as string,
     verifyJwTToken,
     getUserNotifications
   );
   app.delete(
-    notificationPaths.deleteNotification,
+    notificationPaths.deleteNotification.path as string,
     verifyJwTToken,
     removeNotification
   );
   app.delete(
-    notificationPaths.deleteAllNotifications,
+    notificationPaths.deleteAllNotifications.path as string,
     verifyJwTToken,
     removeAllUserNotifications
   );
   app.post(
-    notificationPaths.saveNotificationSettings,
+    notificationPaths.saveNotificationSettings.path as string,
     verifyJwTToken,
     saveNotificationSettings
   );

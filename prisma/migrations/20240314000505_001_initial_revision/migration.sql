@@ -96,7 +96,7 @@ CREATE TABLE `TwoFactorConfirmation` (
 CREATE TABLE `UserGroup` (
     `id` VARCHAR(191) NOT NULL,
     `name` VARCHAR(191) NOT NULL,
-    `description` VARCHAR(191) NOT NULL,
+    `description` VARCHAR(191) NULL,
 
     UNIQUE INDEX `UserGroup_name_key`(`name`),
     PRIMARY KEY (`id`)
@@ -154,6 +154,7 @@ CREATE TABLE `InventoryItem` (
     `inputOutputRatioId` VARCHAR(191) NOT NULL,
 
     UNIQUE INDEX `InventoryItem_name_key`(`name`),
+    UNIQUE INDEX `InventoryItem_inputOutputRatioId_key`(`inputOutputRatioId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -165,6 +166,7 @@ CREATE TABLE `InventoryItemSupplyRecord` (
     `entryDate` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `addedBy` VARCHAR(191) NOT NULL,
     `totalAmount` INTEGER NOT NULL,
+    `availableAmount` INTEGER NOT NULL,
     `inventoryItemId` VARCHAR(191) NOT NULL,
     `conditionId` VARCHAR(191) NOT NULL,
     `supplierProfileId` VARCHAR(191) NULL,
@@ -188,8 +190,11 @@ CREATE TABLE `InventoryItemConsumptionRecord` (
     `addedBy` VARCHAR(191) NOT NULL,
     `lastModifiedBy` VARCHAR(191) NOT NULL,
     `inventoryItemId` VARCHAR(191) NOT NULL,
-    `conditionId` VARCHAR(191) NOT NULL,
-    `amountProduced` INTEGER NOT NULL DEFAULT 0,
+    `produceConditionId` VARCHAR(191) NULL,
+    `amountProduced` INTEGER NULL DEFAULT 0,
+    `dateConsumed` DATETIME(3) NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `createdAt` DATETIME(3) NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
     `dateProduceWasRealized` DATETIME(3) NULL,
 
     PRIMARY KEY (`id`)
@@ -248,6 +253,16 @@ CREATE TABLE `CreditLimit` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
+CREATE TABLE `PaymentTerm` (
+    `id` VARCHAR(191) NOT NULL,
+    `name` VARCHAR(191) NOT NULL,
+    `description` VARCHAR(191) NOT NULL,
+
+    UNIQUE INDEX `PaymentTerm_name_key`(`name`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
 CREATE TABLE `Notification` (
     `id` VARCHAR(191) NOT NULL,
     `userId` VARCHAR(191) NOT NULL,
@@ -263,14 +278,13 @@ CREATE TABLE `Notification` (
 CREATE TABLE `Audit` (
     `id` VARCHAR(191) NOT NULL,
     `invokerId` VARCHAR(191) NOT NULL,
-    `entityId` VARCHAR(191) NOT NULL,
-    `entityName` VARCHAR(191) NOT NULL,
-    `category` ENUM('SETTINGS', 'INVENTORY_SUPPLY_MANAGEMENT', 'INVENTORY_CONSUMTION_MANAGEMENT', 'REPORTS', 'SUPPLIER_MANAGEMENT') NOT NULL,
-    `summary` VARCHAR(191) NOT NULL,
+    `routePath` VARCHAR(191) NOT NULL,
+    `summary` VARCHAR(191) NULL,
     `details` JSON NULL,
     `invokedAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `status` ENUM('SUCCESS', 'FAILURE') NOT NULL,
+    `action` VARCHAR(191) NOT NULL,
 
-    UNIQUE INDEX `Audit_invokerId_key`(`invokerId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -300,8 +314,8 @@ CREATE TABLE `GenerationPeriod` (
 -- CreateTable
 CREATE TABLE `NotificationSettings` (
     `id` VARCHAR(191) NOT NULL,
-    `userGroupIdsToBeNotified` VARCHAR(191) NULL,
-    `userIdsToBeNotified` VARCHAR(191) NULL,
+    `userGroupIdsToBeNotified` JSON NULL,
+    `userIdsToBeNotified` JSON NULL,
 
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -325,6 +339,9 @@ ALTER TABLE `UserOnUserGroups` ADD CONSTRAINT `UserOnUserGroups_userId_fkey` FOR
 ALTER TABLE `UserOnUserGroups` ADD CONSTRAINT `UserOnUserGroups_userGroupId_fkey` FOREIGN KEY (`userGroupId`) REFERENCES `UserGroup`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE `InventoryItem` ADD CONSTRAINT `InventoryItem_inputOutputRatioId_fkey` FOREIGN KEY (`inputOutputRatioId`) REFERENCES `InputOutputRatio`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE `InventoryItemSupplyRecord` ADD CONSTRAINT `InventoryItemSupplyRecord_conditionId_fkey` FOREIGN KEY (`conditionId`) REFERENCES `InventoryItemCondition`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -337,10 +354,22 @@ ALTER TABLE `InventoryItemRecordAmountConsumed` ADD CONSTRAINT `InventoryItemRec
 ALTER TABLE `InventoryItemRecordAmountConsumed` ADD CONSTRAINT `InventoryItemRecordAmountConsumed_consumptionRecordId_fkey` FOREIGN KEY (`consumptionRecordId`) REFERENCES `InventoryItemConsumptionRecord`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `InventoryItemConsumptionRecord` ADD CONSTRAINT `InventoryItemConsumptionRecord_conditionId_fkey` FOREIGN KEY (`conditionId`) REFERENCES `InventoryItemCondition`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE `InventoryItemConsumptionRecord` ADD CONSTRAINT `InventoryItemConsumptionRecord_produceConditionId_fkey` FOREIGN KEY (`produceConditionId`) REFERENCES `InventoryItemCondition`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `InventoryItemConsumptionRecord` ADD CONSTRAINT `InventoryItemConsumptionRecord_inventoryItemId_fkey` FOREIGN KEY (`inventoryItemId`) REFERENCES `InventoryItem`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `InventoryItemConsumptionRecord` ADD CONSTRAINT `InventoryItemConsumptionRecord_addedBy_fkey` FOREIGN KEY (`addedBy`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `InventoryItemConsumptionRecord` ADD CONSTRAINT `InventoryItemConsumptionRecord_lastModifiedBy_fkey` FOREIGN KEY (`lastModifiedBy`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `SupplierProfile` ADD CONSTRAINT `SupplierProfile_paymentTermId_fkey` FOREIGN KEY (`paymentTermId`) REFERENCES `PaymentTerm`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `SupplierProfile` ADD CONSTRAINT `SupplierProfile_creditLimitId_fkey` FOREIGN KEY (`creditLimitId`) REFERENCES `CreditLimit`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `SupplierProfile` ADD CONSTRAINT `SupplierProfile_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `User`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;

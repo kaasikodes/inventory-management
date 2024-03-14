@@ -24,54 +24,54 @@ import {
 
 const inventorySupplyRoutes = (app: Router) => {
   app.patch(
-    inventorySupplyPaths.updateInventorySupplyCondition,
+    inventorySupplyPaths.updateInventorySupplyCondition.path as string,
     verifyJwTToken,
     validateRequestBody(updateSupplyRecordConditionSchema),
     editInventorySupplyRecordCondition
   );
   app.patch(
-    inventorySupplyPaths.updateInventorySupplySupplier,
+    inventorySupplyPaths.updateInventorySupplySupplier.path as string,
     verifyJwTToken,
     validateRequestBody(updateSupplyRecordSupplierSchema),
     editInventorySupplyRecordSupplier
   );
   app.patch(
-    inventorySupplyPaths.updateInventorySupplyEntryDate,
+    inventorySupplyPaths.updateInventorySupplyEntryDate.path as string,
     verifyJwTToken,
     validateRequestBody(updateSupplyRecordEntryDateSchema),
     editInventorySupplyRecordEndDate
   );
   app.patch(
-    inventorySupplyPaths.updateInventorySupplyPhysicalParams,
+    inventorySupplyPaths.updateInventorySupplyPhysicalParams.path as string,
     verifyJwTToken,
     validateRequestBody(updateSupplyRecordPhysicalParamsSchema),
     editInventorySupplyRecordPhysicalParams
   );
   app.patch(
-    inventorySupplyPaths.updateInventorySupplyTotalAmount,
+    inventorySupplyPaths.updateInventorySupplyTotalAmount.path as string,
     verifyJwTToken,
     validateRequestBody(updateSupplyRecordTotalAmountSchema),
     editInventorySupplyRecordTotalAmount
   );
 
   app.delete(
-    inventorySupplyPaths.deleteInventorySupply,
+    inventorySupplyPaths.deleteInventorySupply.path as string,
     verifyJwTToken,
     removeInventorySupplyRecord
   );
   app.post(
-    inventorySupplyPaths.addInventorySupply,
+    inventorySupplyPaths.addInventorySupply.path as string,
     verifyJwTToken,
     validateRequestBody(addSupplyRecordSchema),
     addSupplyRecord
   );
   app.get(
-    inventorySupplyPaths.getInventorySupply,
+    inventorySupplyPaths.getInventorySupply.path as string,
     verifyJwTToken,
     getInventorySupplyRecord
   );
   app.get(
-    inventorySupplyPaths.getInventorySupplies,
+    inventorySupplyPaths.getInventorySupplies.path as string,
     verifyJwTToken,
     getInventorySupplyRecords
   );

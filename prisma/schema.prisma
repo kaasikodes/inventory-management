@@ -288,18 +288,22 @@ enum AppModuleCategory {
   REPORTS
   SUPPLIER_MANAGEMENT
 }
+enum ActionStatus {
+  SUCCESS
+  FAILURE
+}
 model Audit {
   id String @id @default(cuid())
   invokerId String
-  
-  
-  summary String
+  routePath String
+  summary String?
   details Json?
   invokedAt DateTime @default(now())
+  status ActionStatus
+  action String
 
   invoker User @relation(fields: [invokerId], references: [id], onDelete: Cascade)
 
-  @@unique([invokerId])
   
 }
 model UserInvitation {

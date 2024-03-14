@@ -16,30 +16,30 @@ import {
 
 const inventoryConditionRoutes = (app: Router) => {
   app.post(
-    inventoryConditionPaths.addInventoryCondition,
+    inventoryConditionPaths.addInventoryCondition.path as string,
     verifyJwTToken,
     validateRequestBody(addInventoryConditionSchema),
     addInventoryItemCondition
   );
   app.delete(
-    inventoryConditionPaths.deleteInventoryCondition,
+    inventoryConditionPaths.deleteInventoryCondition.path as string,
     verifyJwTToken,
     removeInventoryItemCondition
   );
 
   app.put(
-    inventoryConditionPaths.updateInventoryCondition,
+    inventoryConditionPaths.updateInventoryCondition.path as string,
     verifyJwTToken,
     validateRequestBody(editInventoryConditionSchema),
     editInventoryItemCondition
   );
   app.get(
-    inventoryConditionPaths.getInventoryConditions,
+    inventoryConditionPaths.getInventoryConditions.path as string,
     verifyJwTToken,
     getInventoryItemConditions
   );
   app.get(
-    inventoryConditionPaths.getInventoryCondition,
+    inventoryConditionPaths.getInventoryCondition.path as string,
     verifyJwTToken,
     getInventoryItemCondition
   );

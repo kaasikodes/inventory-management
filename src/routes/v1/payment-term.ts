@@ -15,23 +15,27 @@ import {
 
 const paymentTermRoutes = (app: Router) => {
   app.post(
-    paymentTermPaths.addPaymentTerm,
+    paymentTermPaths.addPaymentTerm.path as string,
     verifyJwTToken,
     validateRequestBody(addPaymentTermSchema),
     addPaymentTerm
   );
   app.delete(
-    paymentTermPaths.deletePaymentTerm,
+    paymentTermPaths.deletePaymentTerm.path as string,
     verifyJwTToken,
     removePaymentTerm
   );
   app.put(
-    paymentTermPaths.updatePaymentTerm,
+    paymentTermPaths.updatePaymentTerm.path as string,
     verifyJwTToken,
     validateRequestBody(updatePaymentTermSchema),
     editPaymentTerm
   );
-  app.get(paymentTermPaths.getPaymentTerms, verifyJwTToken, getPaymentTerms);
+  app.get(
+    paymentTermPaths.getPaymentTerms.path as string,
+    verifyJwTToken,
+    getPaymentTerms
+  );
 };
 
 export default paymentTermRoutes;

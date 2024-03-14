@@ -32,6 +32,14 @@ app.use(cookieParser());
 app.listen(port, () => {
   v1Routes(router);
   app.use("/v1", router);
+  app.use("/address", (request, response) => {
+    // write logic to make request to external api
+
+    const data = {};
+    response.status(200).json({
+      data,
+    });
+  });
   app.all("*", (request, response) => {
     throw new AppError("Invalid route.", 404);
   });

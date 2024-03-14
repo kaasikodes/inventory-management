@@ -1,3 +1,4 @@
+import { TPath } from "../types/path";
 import auditPaths from "./audit";
 import authPaths from "./auth";
 import creditLimitPaths from "./credit-limit";
@@ -33,10 +34,7 @@ type TPathCategory =
   | "notification"
   | "audit";
 
-const appRoutePaths: Record<
-  TPathCategory,
-  Record<string, string | Record<string, string>>
-> = {
+const appRoutePaths: Record<TPathCategory, TPath> = {
   auth: authPaths,
   user: userPaths,
   userGroup: userGroupPaths,

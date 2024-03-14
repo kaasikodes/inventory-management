@@ -1,15 +1,22 @@
+import { ActionStatus } from "@prisma/client";
 import config from "../_config";
 import { db } from "../lib/database";
 import { TPaginationQuery } from "../types/generic";
 
 export const createAuditRecord = async ({
   summary,
+  action,
   details,
   invokerId,
+  routePath,
+  status,
 }: {
-  summary: string;
+  summary?: string;
+  action: string;
+  routePath: string;
   invokerId: string;
   details?: string;
+  status: ActionStatus;
 }) => {
   try {
     const data = await db.audit.create({
@@ -17,6 +24,9 @@ export const createAuditRecord = async ({
         summary,
         details,
         invokerId,
+        action,
+        routePath,
+        status,
       },
       select: {
         id: true,

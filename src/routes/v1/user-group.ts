@@ -18,26 +18,39 @@ import {
 
 const userGroupRoutes = (app: Router) => {
   app.post(
-    userGroupPaths.addUserGroup,
+    userGroupPaths.addUserGroup.path as string,
     verifyJwTToken,
     validateRequestBody(addUserGroupSchema),
+
     addUserGroup
   );
-  app.delete(userGroupPaths.deleteUserGroup, verifyJwTToken, removeUserGroup);
+  app.delete(
+    userGroupPaths.deleteUserGroup.path as string,
+    verifyJwTToken,
+    removeUserGroup
+  );
   app.patch(
-    userGroupPaths.addMultipleUsersToGroup,
+    userGroupPaths.addMultipleUsersToGroup.path as string,
     verifyJwTToken,
     validateRequestBody(addUsersToGroupSchema),
     addUsersToGroup
   );
   app.put(
-    userGroupPaths.updateUserGroup,
+    userGroupPaths.updateUserGroup.path as string,
     verifyJwTToken,
     validateRequestBody(updateUserGroupSchema),
     editUserGroup
   );
-  app.get(userGroupPaths.getUserGroups, verifyJwTToken, getUserGroups);
-  app.get(userGroupPaths.getUserGroup, verifyJwTToken, getUserGroup);
+  app.get(
+    userGroupPaths.getUserGroups.path as string,
+    verifyJwTToken,
+    getUserGroups
+  );
+  app.get(
+    userGroupPaths.getUserGroup.path as string,
+    verifyJwTToken,
+    getUserGroup
+  );
 };
 
 export default userGroupRoutes;

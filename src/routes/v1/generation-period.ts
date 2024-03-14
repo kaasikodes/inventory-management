@@ -15,24 +15,24 @@ import {
 
 const generationPeriodRoutes = (app: Router) => {
   app.post(
-    generationPeriodPaths.addGenerationPeriod,
+    generationPeriodPaths.addGenerationPeriod.path as string,
     verifyJwTToken,
     validateRequestBody(addGenerationPeriodSchema),
     addGenerationPeriod
   );
   app.delete(
-    generationPeriodPaths.deleteGenerationPeriod,
+    generationPeriodPaths.deleteGenerationPeriod.path as string,
     verifyJwTToken,
     removeGenerationPeriod
   );
   app.put(
-    generationPeriodPaths.updateGenerationPeriod,
+    generationPeriodPaths.updateGenerationPeriod.path as string,
     verifyJwTToken,
     validateRequestBody(updateGenerationPeriodSchema),
     editGenerationPeriod
   );
   app.get(
-    generationPeriodPaths.getGenerationPeriods,
+    generationPeriodPaths.getGenerationPeriods.path as string,
     verifyJwTToken,
     getGenerationPeriods
   );

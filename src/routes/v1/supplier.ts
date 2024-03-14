@@ -15,25 +15,25 @@ import {
 
 const supplierProfileRoutes = (app: Router) => {
   app.post(
-    supplierProfilePaths.addSupplierProfile,
+    supplierProfilePaths.addSupplierProfile.path as string,
     verifyJwTToken,
     validateRequestBody(createSupplierProfileSchema),
     addSupplierProfile
   );
   app.delete(
-    supplierProfilePaths.deleteSupplierProfile,
+    supplierProfilePaths.deleteSupplierProfile.path as string,
     verifyJwTToken,
     removeSupplierProfile
   );
   app.patch(
-    supplierProfilePaths.updateSupplierProfile,
+    supplierProfilePaths.updateSupplierProfile.path as string,
     verifyJwTToken,
     validateRequestBody(updateSupplierProfileSchema),
     editSupplierProfile
   );
 
   app.get(
-    supplierProfilePaths.getSupplierProfiles,
+    supplierProfilePaths.getSupplierProfiles.path as string,
     verifyJwTToken,
     getSupplierProfiles
   );

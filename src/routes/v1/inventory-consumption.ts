@@ -14,30 +14,31 @@ import { addInventoryConditionSchema } from "../../validation/inventory-conditio
 
 const inventoryConsumptionRoutes = (app: Router) => {
   app.patch(
-    inventoryConsumptionPaths.updateInventoryConditionProduceInfo,
+    inventoryConsumptionPaths.updateInventoryConsumptionProduceInfo
+      .path as string,
     verifyJwTToken,
     validateRequestBody(updateInventoryConsumptionProduceInfoSchema),
     editConsumptionRecordProduceInfo
   );
 
   app.delete(
-    inventoryConsumptionPaths.deleteInventoryConsumption,
+    inventoryConsumptionPaths.deleteInventoryConsumption.path as string,
     verifyJwTToken,
     removeInventoryConsumptionRecord
   );
   app.post(
-    inventoryConsumptionPaths.addInventoryConsumption,
+    inventoryConsumptionPaths.addInventoryConsumption.path as string,
     verifyJwTToken,
     validateRequestBody(addInventoryConditionSchema),
     addConsumptionRecord
   );
   app.get(
-    inventoryConsumptionPaths.getInventoryConsumption,
+    inventoryConsumptionPaths.getInventoryConsumption.path as string,
     verifyJwTToken,
     getInventoryConsumptionRecord
   );
   app.get(
-    inventoryConsumptionPaths.getInventoryConsumptions,
+    inventoryConsumptionPaths.getInventoryConsumptions.path as string,
     verifyJwTToken,
     getInventoryConsumptionRecords
   );

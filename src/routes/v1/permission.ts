@@ -5,7 +5,11 @@ import { getPermissions } from "../../controllers/permission.controller";
 import permissionPaths from "../../paths/permission";
 
 const permissionRoutes = (app: Router) => {
-  app.get(permissionPaths.getPermissions, verifyJwTToken, getPermissions);
+  app.get(
+    permissionPaths.getPermissions.path as string,
+    verifyJwTToken,
+    getPermissions
+  );
 };
 
 export default permissionRoutes;

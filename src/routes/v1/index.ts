@@ -14,11 +14,13 @@ import inventoryConsumptionRoutes from "./inventory-consumption";
 import reportRoutes from "./report";
 import notificationRoutes from "./notification";
 import auditRoutes from "./audit";
+import { recordAuditReport } from "../../middleware/audit";
+import { verifyJwTToken } from "../../middleware/auth";
 
 const routes = (app: Router) => {
   authRoutes(app);
+  app.use(verifyJwTToken, recordAuditReport);
   userRoutes(app);
-  userGroupRoutes(app);
   userGroupRoutes(app);
   permissionRoutes(app);
   creditLimitRoutes(app);

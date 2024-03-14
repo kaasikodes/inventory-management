@@ -15,24 +15,24 @@ import {
 
 const measurementUnitRoutes = (app: Router) => {
   app.post(
-    measurementUnitPaths.addMeasurementUnit,
+    measurementUnitPaths.addMeasurementUnit.path as string,
     verifyJwTToken,
     validateRequestBody(addMeasurementUnitSchema),
     addMeasurementUnit
   );
   app.delete(
-    measurementUnitPaths.deleteMeasurementUnit,
+    measurementUnitPaths.deleteMeasurementUnit.path as string,
     verifyJwTToken,
     removeMeasurementUnit
   );
   app.put(
-    measurementUnitPaths.updateMeasurementUnit,
+    measurementUnitPaths.updateMeasurementUnit.path as string,
     verifyJwTToken,
     validateRequestBody(editMeasurementUnitSchema),
     editMeasurementUnit
   );
   app.get(
-    measurementUnitPaths.getMeasurementUnits,
+    measurementUnitPaths.getMeasurementUnits.path as string,
     verifyJwTToken,
     getMeasurementUnits
   );
