@@ -9,6 +9,8 @@ import { AppError } from "../types/error";
 import {
   getInventoryItemAvailableSupplies,
   getInventoryItemAvailableSupplyAmount,
+  updateInventorySupplyAvailableAmount,
+  updateInventorySupplyTotalAmount,
 } from "../services/inventory-supply";
 import {
   addInventoryConsumptionSchema,
@@ -82,14 +84,26 @@ export const removeInventoryConsumptionRecord = async (
   try {
     const { id } = req.params;
 
-    const data = await deleteInventoryConsumptionRecord({
+    const consumptionRecord = await deleteInventoryConsumptionRecord({
       id,
     });
+    // update available supply amount
+    await Promise.all(
+      consumptionRecord.amountConsumed.map(async (item) => {
+        await updateInventorySupplyAvailableAmount({
+          id: item.supplyRecordId,
+          data: {
+            availableAmount:
+              item.amountTaken + item.supplyRecord.availableAmount,
+          },
+        });
+      })
+    );
 
     const jsonReponse = new AppJSONResponse(
       "Inventory consumption record deleted successfully!",
       {
-        data,
+        consumptionRecord,
       }
     );
     return res.status(200).json(jsonReponse);
@@ -166,7 +180,7 @@ export const addConsumptionRecord = async (
       supplyRecordId: string;
     }[] = [];
     let i = 0;
-    while (totalAmountTakenFromSelectedSupplies < quantityToBeConsumed) {
+    while (i < availableSupplies.length) {
       // edge cases
       // a single item is equal to the quantity to be consumed
       // a single item is less than the quantity to be consumed
@@ -188,8 +202,7 @@ export const addConsumptionRecord = async (
       if (
         availableSupplies[i].availableAmount > quantityRemainingToBeConsumed
       ) {
-        amountToBeTaken =
-          availableSupplies[i].availableAmount - quantityRemainingToBeConsumed;
+        amountToBeTaken = quantityRemainingToBeConsumed;
       }
 
       supplyRecordsToBeConsumed.push({
@@ -201,6 +214,14 @@ export const addConsumptionRecord = async (
       }
 
       totalAmountTakenFromSelectedSupplies += amountToBeTaken;
+      await updateInventorySupplyAvailableAmount({
+        id: availableSupplies[i].id,
+        data: {
+          availableAmount:
+            availableSupplies[i].availableAmount - amountToBeTaken,
+        },
+      });
+
       i++;
     }
 

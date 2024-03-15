@@ -1,7 +1,10 @@
 import { Router } from "express";
 import { verifyJwTToken } from "../../middleware/auth";
 import { validateRequestBody } from "../../middleware/validation";
-import { updateInventoryConsumptionProduceInfoSchema } from "../../validation/inventory-consumption";
+import {
+  addInventoryConsumptionSchema,
+  updateInventoryConsumptionProduceInfoSchema,
+} from "../../validation/inventory-consumption";
 import {
   addConsumptionRecord,
   editConsumptionRecordProduceInfo,
@@ -10,7 +13,6 @@ import {
   removeInventoryConsumptionRecord,
 } from "../../controllers/inventory-consumption.controller";
 import inventoryConsumptionPaths from "../../paths/inventory-consumption";
-import { addInventoryConditionSchema } from "../../validation/inventory-condition";
 import { recordAuditReport } from "../../middleware/audit";
 
 const inventoryConsumptionRoutes = (app: Router) => {
@@ -31,7 +33,7 @@ const inventoryConsumptionRoutes = (app: Router) => {
   app.post(
     inventoryConsumptionPaths.addInventoryConsumption.path as string,
     verifyJwTToken,
-    validateRequestBody(addInventoryConditionSchema),
+    validateRequestBody(addInventoryConsumptionSchema),
     addConsumptionRecord
   );
   app.get(

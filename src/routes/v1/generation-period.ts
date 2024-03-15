@@ -27,7 +27,7 @@ const generationPeriodRoutes = (app: Router) => {
     verifyJwTToken,
     removeGenerationPeriod
   );
-  app.put(
+  app.patch(
     generationPeriodPaths.updateGenerationPeriod.path as string,
     verifyJwTToken,
     validateRequestBody(updateGenerationPeriodSchema),

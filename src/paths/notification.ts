@@ -1,4 +1,8 @@
 const notificationPaths = {
+  getNotificationSettings: {
+    path: "/notification-settings",
+    action: "User accessed notification settings!",
+  },
   saveNotificationSettings: {
     path: "/save-notification-settings",
     action: "User saved notification settings!",

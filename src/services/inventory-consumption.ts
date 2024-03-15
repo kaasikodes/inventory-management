@@ -8,7 +8,7 @@ export const generateInventoryConsumptionVariationData = async ({
   inventoryItemIds,
   addedByIds,
   consumptionDateDuration,
-  produceConditionIds,
+  conditionIds,
   produceDateDuration,
 }: TRetrieveConsumptionRecordsProps) => {
   try {
@@ -22,7 +22,7 @@ export const generateInventoryConsumptionVariationData = async ({
         },
         inventoryItemIds,
         addedByIds,
-        produceConditionIds,
+        conditionIds,
         consumptionDateDuration: consumptionDateDuration
           ? {
               startDate: new Date(consumptionDateDuration.startDate),
@@ -41,21 +41,19 @@ export const generateInventoryConsumptionVariationData = async ({
         (prev, currentItem) => prev + currentItem.amountTaken,
         0
       );
-      const dateofConsumption = new Date(
-        item.dateConsumed as unknown as string
-      );
-      const expectedProduceDate = item.dateConsumed
+      const dateofConsumption = item.dateConsumed;
+      const expectedProduceDate = dateofConsumption
         ? new Date(
             dateofConsumption.getTime() +
               item.inventoryItem.growthPeriodInSecs * 1000
-          ).toDateString()
-        : "N/A";
+          )
+        : null;
       const expectedAmountToBeProduced =
         (amountConsumed * item.inventoryItem.inputOutputRatio.output) /
         item.inventoryItem.inputOutputRatio.input;
       return {
         "Inventory Item": item.inventoryItem.name,
-        "Consupmtion Date": item.dateConsumed,
+        "Consupmtion Date": dateofConsumption,
         "Added By": item.addedByUser.name,
         "Last Modified By": item.lastModifiedByUser.name,
         "Last Modified At": item.updatedAt,
@@ -72,6 +70,7 @@ export const generateInventoryConsumptionVariationData = async ({
     throw error;
   }
 };
+
 export const getInventoryItemProductionAggregate = async ({
   inventoryItemIds,
   year,
@@ -86,6 +85,7 @@ export const getInventoryItemProductionAggregate = async ({
       where: {
         dateConsumed: {
           gte: new Date(`${year}-${monthValue}-01`),
+          lte: new Date(`${year}-${monthValue}-31`),
         },
         inventoryItemId: {
           in: inventoryItemIds,
@@ -115,6 +115,7 @@ export const getInventoryItemConsumptionAggregate = async ({
         consumptionRecord: {
           dateConsumed: {
             gte: new Date(`${year}-${monthValue}-01`),
+            lte: new Date(`${year}-${monthValue}-31`),
           },
           inventoryItemId: {
             in: inventoryItemIds,
@@ -195,6 +196,13 @@ export const deleteInventoryConsumptionRecord = async ({
       where: {
         id,
       },
+      include: {
+        amountConsumed: {
+          include: {
+            supplyRecord: true,
+          },
+        },
+      },
     });
     return data;
   } catch (error) {
@@ -211,6 +219,25 @@ export const retrieveInventoryConsumptionRecord = async ({
       where: {
         id,
       },
+      select: {
+        produceCondition: true,
+        inventoryItem: {
+          select: {
+            name: true,
+            growthPeriodInSecs: true,
+            inputOutputRatio: true,
+          },
+        },
+        id: true,
+        dateProduceWasRealized: true,
+        amountProduced: true,
+        createdAt: true,
+        updatedAt: true,
+        amountConsumed: true,
+        addedByUser: true,
+        lastModifiedByUser: true,
+        dateConsumed: true,
+      },
     });
     return data;
   } catch (error) {
@@ -223,12 +250,32 @@ export const retrieveInventoryConsumptionRecords = async ({
   produceDateDuration,
   addedByIds,
   inventoryItemIds,
-  produceConditionIds,
+  conditionIds,
 }: TRetrieveConsumptionRecordsProps) => {
   const { lastItemIndex, pageSize: _pageSize } = pagination;
   const pageSize = _pageSize ? +_pageSize : config.DEFAULT_PAGE_SIZE;
   try {
-    const total = await db.inventoryItemConsumptionRecord.count({});
+    const total = await db.inventoryItemConsumptionRecord.count({
+      where: {
+        addedBy: {
+          in: addedByIds,
+        },
+        inventoryItemId: {
+          in: inventoryItemIds,
+        },
+        produceConditionId: {
+          in: conditionIds,
+        },
+        dateProduceWasRealized: {
+          gte: produceDateDuration?.startDate,
+          lte: produceDateDuration?.endDate,
+        },
+        createdAt: {
+          gte: consumptionDateDuration?.startDate,
+          lte: consumptionDateDuration?.endDate,
+        },
+      },
+    });
     const data = await db.inventoryItemConsumptionRecord.findMany({
       take: pageSize,
       ...(lastItemIndex
@@ -247,7 +294,7 @@ export const retrieveInventoryConsumptionRecords = async ({
           in: inventoryItemIds,
         },
         produceConditionId: {
-          in: produceConditionIds,
+          in: conditionIds,
         },
         dateProduceWasRealized: {
           gte: produceDateDuration?.startDate,
@@ -308,7 +355,7 @@ type TAddConsumptionRecord = {
   }[];
 };
 
-type TRetrieveConsumptionRecordsProps = {
+export type TRetrieveConsumptionRecordsProps = {
   pagination?: TPaginationQuery;
   produceDateDuration?: {
     startDate: Date;
@@ -318,7 +365,11 @@ type TRetrieveConsumptionRecordsProps = {
     startDate: Date;
     endDate: Date;
   };
+  supplyEntryDateDuration?: {
+    startDate: Date;
+    endDate: Date;
+  };
   inventoryItemIds?: string[];
   addedByIds?: string[];
-  produceConditionIds?: string[];
+  conditionIds?: string[];
 };

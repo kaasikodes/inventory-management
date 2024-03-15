@@ -14,6 +14,7 @@ import inventoryConsumptionRoutes from "./inventory-consumption";
 import reportRoutes from "./report";
 import notificationRoutes from "./notification";
 import auditRoutes from "./audit";
+import generationPeriodRoutes from "./generation-period";
 
 const routes = (app: Router) => {
   authRoutes(app);
@@ -31,6 +32,8 @@ const routes = (app: Router) => {
   reportRoutes(app);
   notificationRoutes(app);
   auditRoutes(app);
+  generationPeriodRoutes(app);
+  notificationRoutes(app);
 };
 
 export default routes;

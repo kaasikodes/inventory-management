@@ -286,7 +286,7 @@ export const addSupplyRecord = async (
       inventoryItemId,
       supplierProfileId,
       totalAmount,
-      physicalParameters: physicalParameters?.toString() ?? "",
+      physicalParameters: JSON.stringify(physicalParameters),
       addedBy: authUser.id,
       lastModifiedBy: authUser.id,
     });
@@ -295,6 +295,9 @@ export const addSupplyRecord = async (
       "Inventory supply record created successfully!",
       {
         ...record,
+        physicalParameters: record?.physicalParameters
+          ? JSON.parse(record?.physicalParameters.toString())
+          : {},
       }
     );
     return res.status(200).json(jsonReponse);

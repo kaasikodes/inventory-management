@@ -1,4 +1,5 @@
 import config from "../_config";
+import { NOTIFICATION_SETTINGS_UNIQUE_ID_IN_DB } from "../constants";
 import { db } from "../lib/database";
 import { TPaginationQuery } from "../types/generic";
 
@@ -10,8 +11,16 @@ export const saveNotificationSettings = async ({
   userIdsToBeNotified?: string[];
 }) => {
   try {
-    const data = await db.notificationSettings.create({
-      data: {
+    const data = await db.notificationSettings.upsert({
+      where: {
+        id: NOTIFICATION_SETTINGS_UNIQUE_ID_IN_DB,
+      },
+      create: {
+        id: NOTIFICATION_SETTINGS_UNIQUE_ID_IN_DB,
+        userGroupIdsToBeNotified: userGroupIdsToBeNotified,
+        userIdsToBeNotified: userIdsToBeNotified,
+      },
+      update: {
         userGroupIdsToBeNotified: userGroupIdsToBeNotified,
         userIdsToBeNotified: userIdsToBeNotified,
       },
@@ -31,6 +40,18 @@ export const deleteAllUserNotifications = async ({
     const data = await db.notification.deleteMany({
       where: {
         userId,
+      },
+    });
+    return data;
+  } catch (error) {
+    throw error;
+  }
+};
+export const retieveNotificationSettings = async () => {
+  try {
+    const data = await db.notificationSettings.findUnique({
+      where: {
+        id: NOTIFICATION_SETTINGS_UNIQUE_ID_IN_DB,
       },
     });
     return data;
@@ -107,7 +128,12 @@ export const retrieveNotifications = async ({
         id: true,
         title: true,
         description: true,
-        user: true,
+        user: {
+          select: {
+            name: true,
+            email: true,
+          },
+        },
       },
     });
 
@@ -116,7 +142,8 @@ export const retrieveNotifications = async ({
     return {
       data,
       metaData: {
-        hasNextPage: data.length > 0,
+        hasNextPage: data.length !== total, //TODO: Correct logic for hasNextPage in pagination, refer article or come up with a better solution
+
         lastIndex: cursor,
         total,
       },

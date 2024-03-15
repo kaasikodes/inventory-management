@@ -6,14 +6,23 @@ import {
   exportReport,
   generateReport,
   getConsumptionGraph,
+  getConsumptionPerInventoryItemGraph,
+  getProducePerInventoryItemGraph,
   getProductionAmountVariationGraph,
   getProductionGraph,
   getProductionMaturityVariationGraph,
   getReport,
   getReports,
+  getSupplyGraph,
+  getSupplyPerInventoryItemGraph,
   removeReport,
 } from "../../controllers/report.controller";
 import { recordAuditReport } from "../../middleware/audit";
+import { validateRequestBody } from "../../middleware/validation";
+import {
+  editReportSchema,
+  generateReportSchema,
+} from "../../validation/report";
 
 const reportRoutes = (app: Router) => {
   app.use(verifyJwTToken, recordAuditReport);
@@ -32,10 +41,21 @@ const reportRoutes = (app: Router) => {
   app.post(
     reportPaths.generateReport.path as string,
     verifyJwTToken,
+    validateRequestBody(generateReportSchema),
     generateReport
   );
-  app.patch(reportPaths.editReport.path as string, verifyJwTToken, editReport);
+  app.patch(
+    reportPaths.editReport.path as string,
+    verifyJwTToken,
+    validateRequestBody(editReportSchema),
+    editReport
+  );
   //   analytics
+  app.get(
+    reportPaths.analyticsSupplyGraph.path,
+    verifyJwTToken,
+    getSupplyGraph
+  );
   app.get(
     reportPaths.analyticsConsumptionGraph.path,
     verifyJwTToken,
@@ -55,6 +75,21 @@ const reportRoutes = (app: Router) => {
     reportPaths.analyticsProductionMaturityVariationGraph.path,
     verifyJwTToken,
     getProductionMaturityVariationGraph
+  );
+  app.get(
+    reportPaths.analyticsProducePerInventoryItem.path,
+    verifyJwTToken,
+    getProducePerInventoryItemGraph
+  );
+  app.get(
+    reportPaths.analyticsSupplyPerInventoryItem.path,
+    verifyJwTToken,
+    getSupplyPerInventoryItemGraph
+  );
+  app.get(
+    reportPaths.analyticsConsumptionPerInventoryItem.path,
+    verifyJwTToken,
+    getConsumptionPerInventoryItemGraph
   );
 };
 

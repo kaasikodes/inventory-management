@@ -9,6 +9,7 @@ import {
   deleteAllUserNotifications,
   deleteNotification,
   retieveNotification,
+  retieveNotificationSettings,
   retrieveNotifications,
   saveNotificationSettings,
 } from "../services/notification";
@@ -91,6 +92,23 @@ export const removeAllUserNotifications = async (
       {
         data,
       }
+    );
+    return res.status(200).json(jsonReponse);
+  } catch (error) {
+    next(error);
+  }
+};
+export const getNotificationSettings = async (
+  req: Request<{}, {}, {}>,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const data = await retieveNotificationSettings();
+
+    const jsonReponse = new AppJSONResponse(
+      "Notification Setting retrieved successfully!",
+      data
     );
     return res.status(200).json(jsonReponse);
   } catch (error) {

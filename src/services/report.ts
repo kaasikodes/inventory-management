@@ -1,3 +1,4 @@
+import { EReportType } from "@prisma/client";
 import config from "../_config";
 import { db } from "../lib/database";
 import { TPaginationQuery } from "../types/generic";
@@ -7,11 +8,12 @@ export const createReport = async ({
   description,
   data,
   generatedBy,
+  type,
 }: {
   name: string;
   generatedBy: string;
   data: string; //json string
-
+  type: EReportType;
   description?: string;
 }) => {
   // TODO: Update schema to connect generatedBy to the user associated with the report, do this for all models implemting a similar pattern
@@ -22,6 +24,7 @@ export const createReport = async ({
         description,
         data,
         generatedBy,
+        type,
       },
       select: {
         id: true,

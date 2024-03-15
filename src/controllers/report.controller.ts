@@ -19,8 +19,12 @@ import {
   updateReport,
 } from "../services/report";
 import { exportCsvFile } from "../lib/file";
-import { getInventoryItemSupplyAggregate } from "../services/inventory-supply";
-import { MONTHS_IN_YEAR } from "../constants";
+import {
+  generateInventorySupplyData,
+  getInventoryItemSupplyAggregate,
+  getInventoryItemSupplyTotalNAvailableAggregate,
+} from "../services/inventory-supply";
+import { DEFAULT_PAGE_SIZE_4_REPORTS, MONTHS_IN_YEAR } from "../constants";
 import { retrieveInventoryItems } from "../services/inventory-item";
 import lodash from "lodash";
 
@@ -37,10 +41,11 @@ export const generateReport = async (
       description,
       consumptionDateDuration,
       produceDateDuration,
+      supplyEntryDateDuration,
       type,
       inventoryItemIds,
       addedByIds,
-      produceConditionIds,
+      conditionIds,
     } = req.body;
     let data;
     let message: string = "";
@@ -50,26 +55,53 @@ export const generateReport = async (
     }
     switch (type) {
       case "INVENTORY_CONSUMPTION":
-        data = generateInventoryConsumptionVariationData({
+        data = await generateInventoryConsumptionVariationData({
           pagination: {
             lastItemIndex,
             pageSize,
           },
           addedByIds,
-          consumptionDateDuration: {
-            endDate: new Date(consumptionDateDuration.to),
-            startDate: new Date(consumptionDateDuration.from),
-          },
-          produceDateDuration: {
-            endDate: new Date(produceDateDuration.to),
-            startDate: new Date(produceDateDuration.from),
-          },
+          consumptionDateDuration: consumptionDateDuration
+            ? {
+                endDate: new Date(consumptionDateDuration.to),
+                startDate: new Date(consumptionDateDuration.from),
+              }
+            : undefined,
+          produceDateDuration: produceDateDuration
+            ? {
+                endDate: new Date(produceDateDuration.to),
+                startDate: new Date(produceDateDuration.from),
+              }
+            : undefined,
           inventoryItemIds,
-          produceConditionIds,
+          conditionIds,
         });
+
+        console.log(data, "whwyyyy");
         message = "Inventory consumption report created successfully!";
 
         break;
+      case "INVENTORY_SUPPLY":
+        // generateInventorySupplyData
+        data = await generateInventorySupplyData({
+          pagination: {
+            lastItemIndex,
+            pageSize,
+          },
+          addedByIds,
+          supplyEntryDateDuration: supplyEntryDateDuration
+            ? {
+                endDate: new Date(supplyEntryDateDuration.to),
+                startDate: new Date(supplyEntryDateDuration.from),
+              }
+            : undefined,
+
+          inventoryItemIds,
+          conditionIds,
+        });
+
+        console.log(data, "whwyyyy");
+        message = "Inventory supply report created successfully!";
 
       default:
         break;
@@ -80,6 +112,7 @@ export const generateReport = async (
       description,
       data: JSON.stringify(data),
       generatedBy: authUser.id,
+      type,
     });
 
     const jsonReponse = new AppJSONResponse(message, {
@@ -220,22 +253,27 @@ export const getSupplyGraph = async (
     // organize data into months
 
     // Define an array to store promises for fetching data for each month
-    const fetchPromises: Promise<[string, number]>[] = Object.entries(
-      MONTHS_IN_YEAR
-    ).map(async ([key, value]): Promise<[string, number]> => {
-      const total = await getInventoryItemSupplyAggregate({
-        monthValue: value,
-        year: year ?? new Date().getFullYear(),
-        inventoryItemIds: inventoryItemIds?.split(","),
-      });
-      return [key, total];
-    });
+    const fetchPromises: Promise<
+      [string, { total: number; available: number }]
+    >[] = Object.entries(MONTHS_IN_YEAR).map(
+      async ([key, value]): Promise<
+        [string, { total: number; available: number }]
+      > => {
+        const total = await getInventoryItemSupplyTotalNAvailableAggregate({
+          monthValue: value,
+          year: year ?? new Date().getFullYear(),
+          inventoryItemIds: inventoryItemIds?.split(","),
+        });
+        return [key, total];
+      }
+    );
 
     // Wait for all promises to resolve
     const results = await Promise.all(fetchPromises);
 
     // Convert results to an object
-    const organizedData: Record<string, number> = Object.fromEntries(results);
+    const organizedData: Record<string, { total: number; available: number }> =
+      Object.fromEntries(results);
     const jsonReponse = new AppJSONResponse(
       "Supply graph created successfully!",
       organizedData
@@ -291,7 +329,7 @@ export const getProductionGraph = async (
 ) => {
   try {
     const { year, inventoryItemIds } = req.query;
-
+    const newDate = new Date();
     // organize data into months
 
     // Define an array to store promises for fetching data for each month
@@ -300,7 +338,7 @@ export const getProductionGraph = async (
     ).map(async ([key, value]): Promise<[string, number]> => {
       const total = await getInventoryItemProductionAggregate({
         monthValue: value,
-        year: year ?? new Date().getFullYear(),
+        year: year ?? newDate.getFullYear(),
         inventoryItemIds: inventoryItemIds?.split(","),
       });
       return [key, total];
@@ -320,6 +358,7 @@ export const getProductionGraph = async (
     next(error);
   }
 };
+
 export const getProductionAmountVariationGraph = async (
   req: Request<
     {},
@@ -329,7 +368,7 @@ export const getProductionAmountVariationGraph = async (
       year?: number;
       inventoryItemIds?: string;
       addedByIds?: string;
-      produceConditionIds?: string;
+      conditionIds?: string;
     }
   >,
   res: Response,
@@ -342,7 +381,7 @@ export const getProductionAmountVariationGraph = async (
       year,
       inventoryItemIds,
       addedByIds,
-      produceConditionIds,
+      conditionIds,
     } = req.query;
 
     // Define an array to store promises for fetching data for each month
@@ -359,12 +398,14 @@ export const getProductionAmountVariationGraph = async (
           },
           addedByIds: addedByIds?.split(","),
 
-          produceDateDuration: {
-            endDate: new Date(`${year}-${value + 1}-01`),
-            startDate: new Date(`${year}-${value}-01`),
-          },
+          produceDateDuration: year
+            ? {
+                endDate: new Date(`${year}-${value}-31`),
+                startDate: new Date(`${year}-${value}-01`),
+              }
+            : undefined,
           inventoryItemIds: inventoryItemIds?.split(","),
-          produceConditionIds: produceConditionIds?.split(","),
+          conditionIds: conditionIds?.split(","),
         });
         const actualAmountProducedInThatMonth = data.reduce(
           (prev, current) => prev + (current["Actual Amount Produced"] ?? 0),
@@ -400,6 +441,214 @@ export const getProductionAmountVariationGraph = async (
   }
 };
 
+export const getSupplyPerInventoryItemGraph = async (
+  req: Request<
+    {},
+    {},
+    {},
+    TPaginationQuery & {
+      from?: string;
+      to?: string;
+    }
+  >,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { lastItemIndex, pageSize, from, to } = req.query;
+    const inventoryItems = await retrieveInventoryItems({
+      pagination: {
+        pageSize: DEFAULT_PAGE_SIZE_4_REPORTS, //done to get all items, the assumption is that there will be no more than 100 items
+      },
+    });
+    const newDate = new Date();
+    // Define an array to store promises for fetching data for each month
+    const fetchPromises: Promise<[string, { amount: number }]>[] =
+      inventoryItems.data.map(
+        async (item): Promise<[string, { amount: number }]> => {
+          const data = await generateInventorySupplyData({
+            pagination: {
+              lastItemIndex,
+              pageSize,
+            },
+
+            supplyEntryDateDuration: {
+              endDate: to
+                ? new Date(to)
+                : new Date(`${newDate.getFullYear()}-12-31`),
+              startDate: from
+                ? new Date(from)
+                : new Date(`${newDate.getFullYear()}-01-01`),
+            },
+            inventoryItemIds: [item.id],
+          });
+          const supplyTotalAmounts = data.map((item) =>
+            item["Total Amount"] ? item["Total Amount"] : 0
+          );
+
+          const actualMaturityPeriodOfItem = lodash.sum(supplyTotalAmounts);
+
+          return [
+            item.name,
+            {
+              amount: actualMaturityPeriodOfItem ?? 0,
+            },
+          ];
+        }
+      );
+    // Wait for all promises to resolve
+    const results = await Promise.all(fetchPromises);
+
+    // Convert results to an object
+    const organizedData: Record<string, { amount: number }> =
+      Object.fromEntries(results);
+    const jsonReponse = new AppJSONResponse(
+      "Supply per Inventory Item Graph retrieved Successfully",
+      organizedData
+    );
+    return res.status(200).json(jsonReponse);
+  } catch (error) {
+    next(error);
+  }
+};
+export const getProducePerInventoryItemGraph = async (
+  req: Request<
+    {},
+    {},
+    {},
+    TPaginationQuery & {
+      from?: string;
+      to?: string;
+    }
+  >,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { lastItemIndex, pageSize, from, to } = req.query;
+    const inventoryItems = await retrieveInventoryItems({
+      pagination: {
+        pageSize: DEFAULT_PAGE_SIZE_4_REPORTS, //done to get all items, the assumption is that there will be no more than 100 items
+      },
+    });
+    const newDate = new Date();
+    // Define an array to store promises for fetching data for each month
+    const fetchPromises: Promise<[string, { amount: number }]>[] =
+      inventoryItems.data.map(
+        async (item): Promise<[string, { amount: number }]> => {
+          const data = await generateInventoryConsumptionVariationData({
+            pagination: {
+              lastItemIndex,
+              pageSize,
+            },
+
+            produceDateDuration: {
+              endDate: to
+                ? new Date(to)
+                : new Date(`${newDate.getFullYear()}-12-31`),
+              startDate: from
+                ? new Date(from)
+                : new Date(`${newDate.getFullYear()}-01-01`),
+            },
+            inventoryItemIds: [item.id],
+          });
+          const producedAmount = data.map((item) =>
+            item["Actual Amount Produced"] ? item["Actual Amount Produced"] : 0
+          );
+          const actualMaturityPeriodOfItem = lodash.sum(producedAmount);
+
+          return [
+            item.name,
+            {
+              amount: actualMaturityPeriodOfItem ?? 0,
+            },
+          ];
+        }
+      );
+    // Wait for all promises to resolve
+    const results = await Promise.all(fetchPromises);
+
+    // Convert results to an object
+    const organizedData: Record<string, { amount: number }> =
+      Object.fromEntries(results);
+    const jsonReponse = new AppJSONResponse(
+      "Produce per Inventory Item Graph retrieved Successfully",
+      organizedData
+    );
+    return res.status(200).json(jsonReponse);
+  } catch (error) {
+    next(error);
+  }
+};
+export const getConsumptionPerInventoryItemGraph = async (
+  req: Request<
+    {},
+    {},
+    {},
+    TPaginationQuery & {
+      from?: string;
+      to?: string;
+    }
+  >,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { lastItemIndex, pageSize, from, to } = req.query;
+    const inventoryItems = await retrieveInventoryItems({
+      pagination: {
+        pageSize: DEFAULT_PAGE_SIZE_4_REPORTS, //done to get all items, the assumption is that there will be no more than 100 items
+      },
+    });
+    const newDate = new Date();
+    // Define an array to store promises for fetching data for each month
+    const fetchPromises: Promise<[string, { amount: number }]>[] =
+      inventoryItems.data.map(
+        async (item): Promise<[string, { amount: number }]> => {
+          const data = await generateInventoryConsumptionVariationData({
+            pagination: {
+              lastItemIndex,
+              pageSize,
+            },
+
+            produceDateDuration: {
+              endDate: to
+                ? new Date(to)
+                : new Date(`${newDate.getFullYear()}-12-31`),
+              startDate: from
+                ? new Date(from)
+                : new Date(`${newDate.getFullYear()}-01-01`),
+            },
+            inventoryItemIds: [item.id],
+          });
+          const consumedAmount = data.map((item) =>
+            item["Amount Consumed"] ? item["Amount Consumed"] : 0
+          );
+          const total = lodash.sum(consumedAmount);
+
+          return [
+            item.name,
+            {
+              amount: total ?? 0,
+            },
+          ];
+        }
+      );
+    // Wait for all promises to resolve
+    const results = await Promise.all(fetchPromises);
+
+    // Convert results to an object
+    const organizedData: Record<string, { amount: number }> =
+      Object.fromEntries(results);
+    const jsonReponse = new AppJSONResponse(
+      "Consumption per Inventory Item Graph retrieved Successfully",
+      organizedData
+    );
+    return res.status(200).json(jsonReponse);
+  } catch (error) {
+    next(error);
+  }
+};
 export const getProductionMaturityVariationGraph = async (
   req: Request<
     {},
@@ -416,7 +665,7 @@ export const getProductionMaturityVariationGraph = async (
     const { lastItemIndex, pageSize, year } = req.query;
     const inventoryItems = await retrieveInventoryItems({
       pagination: {
-        pageSize: 100, //done to get all items, the assumption is that there will be no more than 100 items
+        pageSize: DEFAULT_PAGE_SIZE_4_REPORTS, //done to get all items, the assumption is that there will be no more than 100 items
       },
     });
     // Define an array to store promises for fetching data for each month
@@ -430,26 +679,37 @@ export const getProductionMaturityVariationGraph = async (
             pageSize,
           },
 
-          produceDateDuration: {
-            endDate: new Date(`${year ?? new Date().getFullYear()}-12-31`),
-            startDate: new Date(`${year ?? new Date().getFullYear()}-01-01`),
-          },
+          produceDateDuration: year
+            ? {
+                endDate: new Date(`${year}-12-31`),
+                startDate: new Date(`${year}-01-01`),
+              }
+            : undefined,
           inventoryItemIds: [item.id],
         });
-        const actualMaturityPeriodOfItem = lodash.mean(
-          data.map((item) =>
+        const produceDateInHrs = data
+          .map((item) =>
             item["Actual Produce Date"]
-              ? new Date(item["Actual Produce Date"]).getSeconds()
+              ? item["Actual Produce Date"].getTime()
               : 0
           )
-        );
-        const expectedMaturityPeriodOfItem = lodash.mean(
-          data.map((item) =>
+          .map((item) => item / 1000 / 60 / 60);
+        const expectedDateInHrs = data
+          .map((item) =>
             item["Expected Produce Date"]
-              ? new Date(item["Expected Produce Date"]).getSeconds()
+              ? item["Expected Produce Date"].getTime()
               : 0
           )
+          .map((item) => item / 1000 / 60 / 60);
+        const actualMaturityPeriodOfItem = lodash.mean(produceDateInHrs);
+        const expectedMaturityPeriodOfItem = lodash.mean(expectedDateInHrs);
+        console.log(
+          data
+            .map((item) => item["Actual Produce Date"])
+            .filter((item) => item),
+          "CONSUME"
         );
+        console.log(produceDateInHrs, "produceDateInHrs");
         return [
           item.name,
           {

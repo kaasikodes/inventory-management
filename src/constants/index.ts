@@ -16,3 +16,5 @@ export const MONTHS_IN_YEAR: Record<string, TMonthNumericValue> = {
 };
 
 export const DEFAULT_PAGE_SIZE_4_REPORTS = 100;
+
+export const NOTIFICATION_SETTINGS_UNIQUE_ID_IN_DB = "notification_settings";

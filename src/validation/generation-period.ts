@@ -9,11 +9,11 @@ export const addGenerationPeriodSchema = z
   })
   .refine(
     ({ endDate, startDate }) => {
-      // Check if endDate is before startDate
-      return new Date(endDate) < new Date(startDate);
+      // Check if endDate is greater than startDate
+      return new Date(endDate) > new Date(startDate);
     },
     {
-      message: "End date must be before the start date",
+      message: "End date must be greater than start date",
       path: ["endDate"],
     }
   );

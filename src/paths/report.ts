@@ -22,10 +22,22 @@ const reportPaths = {
     action: "User edited report!",
   },
   generateReport: {
-    path: "/report/generate/:id",
+    path: "/report/generate",
     action: "User generated report!",
   },
   // analytics
+  analyticsConsumptionPerInventoryItem: {
+    path: "/reports/consumption-per-inventory-item",
+    action: "User accessed consumption per inventory graph!",
+  },
+  analyticsSupplyPerInventoryItem: {
+    path: "/reports/supply-per-inventory-item",
+    action: "User accessed supply per inventory graph!",
+  },
+  analyticsProducePerInventoryItem: {
+    path: "/reports/produce-per-inventory-item",
+    action: "User accessed produce per inventory graph!",
+  },
   analyticsSupplyGraph: {
     path: "/reports/supply-graph",
     action: "User accessed supply graph!",

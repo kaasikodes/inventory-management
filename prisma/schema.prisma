@@ -32,6 +32,8 @@ model User {
   activityLog Audit[]
   consumptionRecordsAdded InventoryItemConsumptionRecord[] @relation("addedByUser")
   consumptionRecordsLastModified InventoryItemConsumptionRecord[] @relation("lastModifiedByUser")
+  supplyRecordsAdded InventoryItemSupplyRecord[] @relation("addedByUser")
+  supplyRecordsLastModified InventoryItemSupplyRecord[] @relation("lastModifiedByUser")
 }
 model Address {
   id            String    @id @default(cuid())
@@ -188,6 +190,9 @@ model InventoryItemSupplyRecord {
   
   supplierProfileId String?
   amountConsumed InventoryItemRecordAmountConsumed[]
+
+  addedByUser User @relation("addedByUser", fields: [addedBy], references: [id])
+  lastModifiedByUser User @relation("lastModifiedByUser",fields: [lastModifiedBy], references: [id])
 }
 model InventoryItemRecordAmountConsumed {
   id String @id @default(cuid())
@@ -242,9 +247,14 @@ model MeasurementUnit {
   name String @unique
   
 }
+
+enum EReportType {
+  INVENTORY_CONSUMPTION
+  INVENTORY_SUPPLY
+}
 model Report { //this will be used to generate a report that user can either view or download from csv from the data field
   id String @id @default(cuid())
-
+  type EReportType?
   name String @unique
   description String?
   generatedBy String
@@ -278,7 +288,7 @@ model Notification {
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([userId])
+ 
   
 }
 enum AppModuleCategory {
