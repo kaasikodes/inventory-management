@@ -16,7 +16,7 @@ import inventoryConsumptionPaths from "../../paths/inventory-consumption";
 import { recordAuditReport } from "../../middleware/audit";
 
 const inventoryConsumptionRoutes = (app: Router) => {
-  app.use(verifyJwTToken, recordAuditReport);
+  //app.use(verifyJwTToken, recordAuditReport);
   app.patch(
     inventoryConsumptionPaths.updateInventoryConsumptionProduceInfo
       .path as string,

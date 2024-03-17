@@ -29,8 +29,9 @@ export const addUserSchema = z.object({
 });
 
 export const editUserSchema = z.object({
-  name: z.string().min(3),
+  name: z.string().min(3).optional(),
   image: z.string().optional(),
+  status: z.enum(["ACTIVE", "INACTIVE", "BLACKLISTED", "PENDING"]).optional(),
   address: upsertAddressSchema.optional(),
 });
 

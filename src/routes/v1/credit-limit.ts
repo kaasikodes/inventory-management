@@ -15,7 +15,7 @@ import {
 import { recordAuditReport } from "../../middleware/audit";
 
 const creditLimitRoutes = (app: Router) => {
-  app.use(verifyJwTToken, recordAuditReport);
+  //app.use(verifyJwTToken, recordAuditReport);
   app.post(
     creditLimitPaths.addCreditLimit.path as string,
     verifyJwTToken,

@@ -16,7 +16,7 @@ import { validateRequestBody } from "../../middleware/validation";
 import { saveNotificationSettingSchema } from "../../validation/notification";
 
 const notificationRoutes = (app: Router) => {
-  app.use(verifyJwTToken, recordAuditReport);
+  //app.use(verifyJwTToken, recordAuditReport);
   app.get(
     notificationPaths.getNotification.path as string,
     verifyJwTToken,

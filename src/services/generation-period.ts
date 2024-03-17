@@ -88,6 +88,8 @@ export const retrieveGenerationPeriods = async ({
         id: true,
         name: true,
         description: true,
+        endDate: true,
+        startDate: true,
       },
     });
 

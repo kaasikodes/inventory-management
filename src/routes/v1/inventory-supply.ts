@@ -24,7 +24,7 @@ import {
 import { recordAuditReport } from "../../middleware/audit";
 
 const inventorySupplyRoutes = (app: Router) => {
-  app.use(verifyJwTToken, recordAuditReport);
+  //app.use(verifyJwTToken, recordAuditReport);
   app.patch(
     inventorySupplyPaths.updateInventorySupplyCondition.path as string,
     verifyJwTToken,

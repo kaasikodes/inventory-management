@@ -239,6 +239,15 @@ export const retrieveInventoryConsumptionRecord = async ({
         dateConsumed: true,
       },
     });
+    if (data) {
+      return {
+        ...data,
+        amountConsumedValue: data.amountConsumed.reduce(
+          (prev, present) => prev + present.amountTaken,
+          0
+        ),
+      };
+    }
     return data;
   } catch (error) {
     throw error;
@@ -266,14 +275,18 @@ export const retrieveInventoryConsumptionRecords = async ({
         produceConditionId: {
           in: conditionIds,
         },
-        dateProduceWasRealized: {
-          gte: produceDateDuration?.startDate,
-          lte: produceDateDuration?.endDate,
-        },
-        createdAt: {
-          gte: consumptionDateDuration?.startDate,
-          lte: consumptionDateDuration?.endDate,
-        },
+        dateProduceWasRealized: produceDateDuration
+          ? {
+              gte: produceDateDuration?.startDate,
+              lte: produceDateDuration?.endDate,
+            }
+          : undefined,
+        createdAt: consumptionDateDuration
+          ? {
+              gte: consumptionDateDuration?.startDate,
+              lte: consumptionDateDuration?.endDate,
+            }
+          : undefined,
       },
     });
     const data = await db.inventoryItemConsumptionRecord.findMany({
@@ -296,14 +309,18 @@ export const retrieveInventoryConsumptionRecords = async ({
         produceConditionId: {
           in: conditionIds,
         },
-        dateProduceWasRealized: {
-          gte: produceDateDuration?.startDate,
-          lte: produceDateDuration?.endDate,
-        },
-        createdAt: {
-          gte: consumptionDateDuration?.startDate,
-          lte: consumptionDateDuration?.endDate,
-        },
+        dateProduceWasRealized: produceDateDuration
+          ? {
+              gte: produceDateDuration?.startDate,
+              lte: produceDateDuration?.endDate,
+            }
+          : undefined,
+        createdAt: consumptionDateDuration
+          ? {
+              gte: consumptionDateDuration?.startDate,
+              lte: consumptionDateDuration?.endDate,
+            }
+          : undefined,
       },
       select: {
         produceCondition: true,
@@ -329,7 +346,13 @@ export const retrieveInventoryConsumptionRecords = async ({
     const lastItemInResults = data[pageSize - 1]; // Remember: zero-based index! :)
     const cursor = lastItemInResults?.id;
     return {
-      data,
+      data: data.map((item) => ({
+        ...item,
+        amountConsumedValue: item.amountConsumed.reduce(
+          (prev, present) => prev + present.amountTaken,
+          0
+        ),
+      })),
       metaData: {
         hasNextPage: data.length > 0,
         lastIndex: cursor,

@@ -13,6 +13,7 @@ import config from "../_config";
 import {
   createUser,
   getUserByEmail,
+  getUserById,
   updateUserPassword,
 } from "../services/user.service";
 import {
@@ -170,12 +171,27 @@ export const changeAuthUserPassword = async (
     .status(200)
     .json(new AppJSONResponse("Password updated successfully", updatedUser));
 };
-export const userAuthProfile = (req: Request, res: Response) => {
-  return res
-    .status(200)
-    .json(
-      new AppJSONResponse("Authenticated User Profile retrieved!", req.user)
+export const userAuthProfile = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    //
+    const authUser = req.user;
+    if (!authUser) {
+      throw new AppError("Authenticated user absent", 400);
+    }
+    const user = await getUserById({ id: authUser?.id });
+    return res.status(200).json(
+      new AppJSONResponse("Authenticated User Profile retrieved!", {
+        ...authUser,
+        user,
+      })
     );
+  } catch (error) {
+    next(error);
+  }
 };
 export const loginUser = async (
   req: Request<{}, {}, z.infer<typeof loginUserSchema>>,

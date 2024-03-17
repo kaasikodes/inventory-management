@@ -15,7 +15,7 @@ import {
 import { recordAuditReport } from "../../middleware/audit";
 
 const measurementUnitRoutes = (app: Router) => {
-  app.use(verifyJwTToken, recordAuditReport);
+  //app.use(verifyJwTToken, recordAuditReport);
   app.post(
     measurementUnitPaths.addMeasurementUnit.path as string,
     verifyJwTToken,

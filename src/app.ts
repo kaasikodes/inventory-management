@@ -4,6 +4,7 @@ import cookieParser from "cookie-parser";
 import { errorHandler } from "./middleware/error";
 import v1Routes from "./routes/v1";
 import { AppError } from "./types/error";
+import cors from "cors";
 
 const { port } = config;
 const app = express();
@@ -18,7 +19,14 @@ const router = express.Router();
 // app.use(credentials);
 
 // // Cross Origin Resource Sharing
-// app.use(cors(corsOptions));
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    // origin: "*",
+    // methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+    credentials: true,
+  })
+);
 
 // // built-in middleware to handle urlencoded form data
 app.use(express.urlencoded({ extended: false }));

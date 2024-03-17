@@ -274,7 +274,7 @@ export const editUser = async (
   try {
     // TODO: Attach the image to the req body via middleware (use aws s3)
     const { id } = req.params;
-    const { name, address, image } = req.body;
+    const { name, address, image, status } = req.body;
     const _address =
       address && (await createOrUpdateAddress({ ...address, id: address?.id }));
     const user = await updateUser({
@@ -283,6 +283,7 @@ export const editUser = async (
         name,
         image,
         addressId: _address?.id,
+        status,
       },
     });
 

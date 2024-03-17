@@ -344,6 +344,17 @@ export const retrieveInventorySupplyRecord = async ({ id }: { id: string }) => {
       where: {
         id,
       },
+      include: {
+        inventoryItem: {
+          include: {
+            measurementUnit: true,
+          },
+        },
+        condition: true,
+        amountConsumed: true,
+        addedByUser: true,
+        lastModifiedByUser: true,
+      },
     });
     return data;
   } catch (error) {
@@ -403,7 +414,11 @@ export const retrieveInventorySupplyRecords = async ({
         },
       },
       include: {
-        inventoryItem: true,
+        inventoryItem: {
+          include: {
+            measurementUnit: true,
+          },
+        },
         condition: true,
         amountConsumed: true,
         addedByUser: true,

@@ -169,10 +169,11 @@ export const getReport = async (
     const data = await retrieveReport({
       id,
     });
-
-    const jsonReponse = new AppJSONResponse("Report retrieved successfully!", {
-      data,
-    });
+    delete (data as any)["data"]; //remove the consumer of endpoint does need to see
+    const jsonReponse = new AppJSONResponse(
+      "Report retrieved successfully!",
+      data
+    );
     return res.status(200).json(jsonReponse);
   } catch (error) {
     next(error);
@@ -378,7 +379,7 @@ export const getProductionAmountVariationGraph = async (
     const {
       lastItemIndex,
       pageSize,
-      year,
+      year: _year,
       inventoryItemIds,
       addedByIds,
       conditionIds,
@@ -391,6 +392,9 @@ export const getProductionAmountVariationGraph = async (
       async ([key, value]): Promise<
         [string, { expected: number; actual: number }]
       > => {
+        const newDate = new Date();
+        const currentYear = newDate.getFullYear();
+        const year = _year ?? currentYear;
         const data = await generateInventoryConsumptionVariationData({
           pagination: {
             lastItemIndex,
@@ -398,12 +402,10 @@ export const getProductionAmountVariationGraph = async (
           },
           addedByIds: addedByIds?.split(","),
 
-          produceDateDuration: year
-            ? {
-                endDate: new Date(`${year}-${value}-31`),
-                startDate: new Date(`${year}-${value}-01`),
-              }
-            : undefined,
+          produceDateDuration: {
+            endDate: new Date(`${year}-${value}-31`),
+            startDate: new Date(`${year}-${value}-01`),
+          },
           inventoryItemIds: inventoryItemIds?.split(","),
           conditionIds: conditionIds?.split(","),
         });

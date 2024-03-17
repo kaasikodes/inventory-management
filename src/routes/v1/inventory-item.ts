@@ -25,7 +25,7 @@ import { convertImportRequestBodyToAcceptableInventoryItemFormat } from "../../m
 import { recordAuditReport } from "../../middleware/audit";
 
 const inventoryItemRoutes = (app: Router) => {
-  app.use(verifyJwTToken, recordAuditReport);
+  //app.use(verifyJwTToken, recordAuditReport);
   app.post(
     inventoryItemPaths.importInventoryItems.path as string,
     verifyJwTToken,

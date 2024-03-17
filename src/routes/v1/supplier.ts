@@ -15,7 +15,7 @@ import {
 import { recordAuditReport } from "../../middleware/audit";
 
 const supplierProfileRoutes = (app: Router) => {
-  app.use(verifyJwTToken, recordAuditReport);
+  //app.use(verifyJwTToken, recordAuditReport);
   app.post(
     supplierProfilePaths.addSupplierProfile.path as string,
     verifyJwTToken,

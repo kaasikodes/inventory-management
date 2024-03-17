@@ -23,6 +23,7 @@ export const verifyJwTToken = async (
   next: NextFunction
 ) => {
   const hasAuthorization = req.headers["authorization"];
+  console.log(req.cookies, "COOKIES_");
   let refreshToken = req?.cookies?.[REFRESH_TOKEN_COOKIE_NAME];
   let userId = "";
 

@@ -64,9 +64,18 @@ export const retrieveReports = async ({
         : {}),
       where: { name: { contains: search } },
       select: {
-        id: true,
+        generatedBy: true,
         name: true,
+        type: true,
+        generatedByUser: {
+          select: {
+            name: true,
+            email: true,
+          },
+        },
+        id: true,
         description: true,
+        generatedAt: true,
       },
     });
 
@@ -90,6 +99,21 @@ export const retrieveReport = async ({ id }: { id: string }) => {
     const data = await db.report.findUnique({
       where: {
         id,
+      },
+      select: {
+        generatedBy: true,
+        name: true,
+        type: true,
+        generatedByUser: {
+          select: {
+            name: true,
+            email: true,
+          },
+        },
+        id: true,
+        description: true,
+        generatedAt: true,
+        data: true,
       },
     });
     return data;

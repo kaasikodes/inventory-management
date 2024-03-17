@@ -67,6 +67,9 @@ export const retrieveInventoryItem = async ({ id }: { id: string }) => {
       where: {
         id,
       },
+      include: {
+        measurementUnit: true,
+      },
     });
     return data;
   } catch (error) {
@@ -97,6 +100,10 @@ export const retrieveInventoryItems = async ({
           }
         : {}),
       where: { name: { contains: search } },
+      include: {
+        inputOutputRatio: true,
+        measurementUnit: true,
+      },
     });
 
     const lastItemInResults = data[pageSize - 1]; // Remember: zero-based index! :)

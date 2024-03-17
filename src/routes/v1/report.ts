@@ -25,7 +25,7 @@ import {
 } from "../../validation/report";
 
 const reportRoutes = (app: Router) => {
-  app.use(verifyJwTToken, recordAuditReport);
+  //app.use(verifyJwTToken, recordAuditReport);
   app.delete(
     reportPaths.deleteReport.path as string,
     verifyJwTToken,

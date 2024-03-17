@@ -29,7 +29,7 @@ import { checkUniquenessOfEmailsDuringImport } from "../../middleware/user";
 import { recordAuditReport } from "../../middleware/audit";
 
 const userRoutes = (app: Router) => {
-  app.use(verifyJwTToken, recordAuditReport);
+  //app.use(verifyJwTToken, recordAuditReport);
 
   app.post(
     userPaths.importUsers.path as string,

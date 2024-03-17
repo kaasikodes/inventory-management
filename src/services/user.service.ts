@@ -202,8 +202,6 @@ export const retrieveUsers = async ({
         email: true,
         image: true,
         status: true,
-        password: true,
-        emailVerified: true,
       },
     });
 
@@ -233,6 +231,8 @@ export const deleteUser = async ({ id }: { id: string }) => {
         id: true,
         name: true,
         email: true,
+        image: true,
+        status: true,
       },
     });
     return user;
@@ -253,8 +253,20 @@ export const getUserById = async ({ id }: { id: string }) => {
         email: true,
         image: true,
         status: true,
-        password: true,
-        emailVerified: true,
+        userGroups: {
+          select: {
+            userGroup: {
+              select: {
+                name: true,
+                permissions: {
+                  select: {
+                    permission: true,
+                  },
+                },
+              },
+            },
+          },
+        },
       },
     });
     return user;
@@ -320,12 +332,13 @@ export const updateUser = async ({
 }: {
   id: string;
   data: {
-    name: string;
+    name?: string;
     image?: string;
     addressId?: string;
+    status?: UserStatus;
   };
 }) => {
-  const { addressId, name, image } = data;
+  const { addressId, name, image, status } = data;
   try {
     const updatedGroup = await db.user.update({
       where: {
@@ -335,6 +348,7 @@ export const updateUser = async ({
         name,
         image,
         addressId,
+        status,
       },
       select: {
         id: true,

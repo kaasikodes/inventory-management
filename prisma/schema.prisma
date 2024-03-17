@@ -30,6 +30,7 @@ model User {
   supplierProfile SupplierProfile?
   notifications Notification[]
   activityLog Audit[]
+  reports Report[]
   consumptionRecordsAdded InventoryItemConsumptionRecord[] @relation("addedByUser")
   consumptionRecordsLastModified InventoryItemConsumptionRecord[] @relation("lastModifiedByUser")
   supplyRecordsAdded InventoryItemSupplyRecord[] @relation("addedByUser")
@@ -172,6 +173,7 @@ model InventoryItem {
   supplyRecords InventoryItemSupplyRecord[]
   consumptionRecords InventoryItemConsumptionRecord[]
   inputOutputRatio InputOutputRatio  @relation(fields: [inputOutputRatioId], references: [id], onDelete: Cascade)
+  measurementUnit MeasurementUnit  @relation(fields: [measurementUnitId], references: [id], onDelete: Cascade)
 
 }
 model InventoryItemSupplyRecord {
@@ -245,6 +247,7 @@ model MeasurementUnit {
   id String @id @default(cuid())
 
   name String @unique
+  inventoryItems InventoryItem[]
   
 }
 
@@ -258,6 +261,7 @@ model Report { //this will be used to generate a report that user can either vie
   name String @unique
   description String?
   generatedBy String
+  generatedByUser User @relation(fields: [generatedBy], references: [id], onDelete: Cascade)
   generatedAt DateTime @default(now())
   data Json  
 }
@@ -287,6 +291,9 @@ model Notification {
   details Json?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime? @default(now())
+  updatedAt DateTime?  @updatedAt @default(now())
 
  
   
