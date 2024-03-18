@@ -192,6 +192,7 @@ model InventoryItemSupplyRecord {
   
   supplierProfileId String?
   amountConsumed InventoryItemRecordAmountConsumed[]
+  supplier SupplierProfile? @relation(fields: [supplierProfileId], references: [id], onDelete: Cascade)
 
   addedByUser User @relation("addedByUser", fields: [addedBy], references: [id])
   lastModifiedByUser User @relation("lastModifiedByUser",fields: [lastModifiedBy], references: [id])
@@ -230,7 +231,7 @@ model SupplierProfile { //farmer
 
   paymentTerm PaymentTerm @relation(fields: [paymentTermId], references: [id], onDelete: Cascade)
   creditLimit CreditLimit @relation(fields: [creditLimitId], references: [id], onDelete: Cascade)
-
+  supplyRecords InventoryItemSupplyRecord[]
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId])

@@ -55,20 +55,23 @@ export const updateUserGroup = async ({
     const group = await retrieveUserGroup({ id });
     const permissonIdsToDisconnect = group?.permissions
       .filter(
-        (permission) => !data.permissionIds?.includes(permission.permission.id)
+        (permission) =>
+          !data.permissionIds?.includes(permission?.permission?.id ?? "")
       )
-      .map((permission) => permission.permission.id);
-    const permissionIdsToConnect = data.permissionIds?.filter(
-      (permissionId) =>
-        !group?.permissions.some(
-          (permission) => permission.permission.id === permissionId
-        )
-    );
+      .map((permission) => permission?.permission?.id);
+    const permissionIdsToConnect = data.permissionIds
+      ?.filter(
+        (permissionId) =>
+          !group?.permissions.some(
+            (permission) => permission?.permission?.id === permissionId
+          )
+      )
+      ?.filter((item) => typeof item === "string");
     // remove permission
     await db.permissionsOnUserGroups.deleteMany({
       where: {
         permissionId: {
-          in: permissonIdsToDisconnect,
+          in: permissonIdsToDisconnect as string[],
         },
         userGroupId: id,
       },

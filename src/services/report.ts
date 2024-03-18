@@ -63,6 +63,9 @@ export const retrieveReports = async ({
           }
         : {}),
       where: { name: { contains: search } },
+      orderBy: {
+        generatedAt: "desc",
+      },
       select: {
         generatedBy: true,
         name: true,

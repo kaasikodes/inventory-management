@@ -246,7 +246,7 @@ export const editInventorySupplyRecordPhysicalParams = async (
     const data = await updateInventorySupplyPhysicalParams({
       id,
       data: {
-        physicalParameters: physicalParameters?.toString() ?? "",
+        physicalParameters: JSON.stringify(physicalParameters ?? []),
       },
     });
 
@@ -286,7 +286,7 @@ export const addSupplyRecord = async (
       inventoryItemId,
       supplierProfileId,
       totalAmount,
-      physicalParameters: JSON.stringify(physicalParameters),
+      physicalParameters: JSON.stringify(physicalParameters ?? []),
       addedBy: authUser.id,
       lastModifiedBy: authUser.id,
     });

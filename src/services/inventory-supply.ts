@@ -350,13 +350,33 @@ export const retrieveInventorySupplyRecord = async ({ id }: { id: string }) => {
             measurementUnit: true,
           },
         },
+        supplier: {
+          select: {
+            id: true,
+
+            user: {
+              select: {
+                name: true,
+                id: true,
+                email: true,
+                image: true,
+              },
+            },
+          },
+        },
+
         condition: true,
         amountConsumed: true,
         addedByUser: true,
         lastModifiedByUser: true,
       },
     });
-    return data;
+    return {
+      ...data,
+      physicalParameters: JSON.parse(
+        data?.physicalParameters?.toString() ?? "[]"
+      ),
+    };
   } catch (error) {
     throw error;
   }
@@ -419,6 +439,20 @@ export const retrieveInventorySupplyRecords = async ({
             measurementUnit: true,
           },
         },
+        supplier: {
+          select: {
+            id: true,
+
+            user: {
+              select: {
+                name: true,
+                id: true,
+                email: true,
+                image: true,
+              },
+            },
+          },
+        },
         condition: true,
         amountConsumed: true,
         addedByUser: true,
@@ -429,7 +463,12 @@ export const retrieveInventorySupplyRecords = async ({
     const lastItemInResults = data[pageSize - 1]; // Remember: zero-based index! :)
     const cursor = lastItemInResults?.id;
     return {
-      data,
+      data: data.map((item) => ({
+        ...item,
+        physicalParameters: JSON.parse(
+          item.physicalParameters?.toString() ?? "[]"
+        ),
+      })),
       metaData: {
         hasNextPage: data.length > 0,
         lastIndex: cursor,

@@ -13,9 +13,15 @@ export const addSupplyRecordSchema = z.object({
   entryDate: z.string().datetime().optional(),
   inventoryItemId: z.string(),
   supplierProfileId: z.string().optional(),
-  physicalParameters: jsonSchema.optional(),
+  physicalParameters: z
+    .array(
+      z.object({
+        property: z.string(),
+        value: z.string().or(z.number()),
+      })
+    )
+    .optional(),
 });
-
 export const updateSupplyRecordTotalAmountSchema = addSupplyRecordSchema.pick({
   totalAmount: true,
 });

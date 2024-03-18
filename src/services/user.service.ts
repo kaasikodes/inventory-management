@@ -32,6 +32,28 @@ export const updateUserPassword = async ({
   }
 };
 
+// TODO: Add to postman documentation for the associated route
+export const removeMultipleUsersFromGroup = async ({
+  groupId,
+  userIds,
+}: {
+  userIds: string[];
+  groupId: string;
+}) => {
+  try {
+    const group = await db.userOnUserGroups.deleteMany({
+      where: {
+        userGroupId: groupId,
+        userId: {
+          in: userIds,
+        },
+      },
+    });
+    return { count: userIds.length, group };
+  } catch (error) {
+    throw error;
+  }
+};
 export const assignMultipleUsersToGroup = async ({
   groupId,
   userIds,
@@ -167,13 +189,15 @@ export const retrieveUsers = async ({
     const total = await db.user.count({
       where: {
         name: { contains: search },
-        userGroups: {
-          some: {
-            userGroupId: {
-              in: groupIds,
-            },
-          },
-        },
+        userGroups: groupIds
+          ? {
+              some: {
+                userGroupId: {
+                  in: groupIds,
+                },
+              },
+            }
+          : undefined,
       },
     });
     const data = await db.user.findMany({
@@ -188,13 +212,15 @@ export const retrieveUsers = async ({
         : {}),
       where: {
         name: { contains: search },
-        userGroups: {
-          some: {
-            userGroupId: {
-              in: groupIds,
-            },
-          },
-        },
+        userGroups: groupIds
+          ? {
+              some: {
+                userGroupId: {
+                  in: groupIds,
+                },
+              },
+            }
+          : undefined,
       },
       select: {
         id: true,

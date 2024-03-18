@@ -6,6 +6,7 @@ import {
   changeUserStatusInBulkSchema,
   editUserSchema,
   importUsersSchema,
+  removeMultipleUsersFromGroupSchema
 } from "../validation/user";
 import {
   assignMultipleUsersToGroup,
@@ -13,6 +14,7 @@ import {
   createMultipleUsers,
   deleteUser,
   getUserById,
+  removeMultipleUsersFromGroup,
   retrieveUsers,
   updateUser,
 } from "../services/user.service";
@@ -47,6 +49,34 @@ export const exportUserImportTemplate = async (
       req,
       res
     );
+  } catch (error) {
+    next(error);
+  }
+};
+export const removeUsersFromGroup = async (
+  req: Request<{}, {}, z.infer<typeof removeMultipleUsersFromGroupSchema>>,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { groupId, userIds } = req.body;
+  
+    const users = await removeMultipleUsersFromGroup({
+      groupId,
+      userIds,
+    });
+    if (users.count === 0) {
+      return res
+        .status(200)
+        .json(new AppJSONResponse("No users were added to the group!", null));
+    }
+    const jsonReponse = new AppJSONResponse(
+      `${users.count} user(s) were added successfully to group!`,
+      {
+        count: users.count,
+      }
+    );
+    return res.status(200).json(jsonReponse);
   } catch (error) {
     next(error);
   }
@@ -159,7 +189,7 @@ export const getUsers = async (
     {},
     {},
     {},
-    TPaginationQuery & TSearchQuery & { groupIds?: string[] }
+    TPaginationQuery & TSearchQuery & { groupIds?: string }
   >,
   res: Response,
   next: NextFunction
@@ -173,7 +203,7 @@ export const getUsers = async (
         pageSize,
       },
       search,
-      groupIds,
+      groupIds: groupIds?.split(","),
     });
 
     const jsonReponse = new AppJSONResponseWithPagination(

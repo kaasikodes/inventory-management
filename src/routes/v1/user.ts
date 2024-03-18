@@ -7,6 +7,7 @@ import {
   changeUserStatusInBulkSchema,
   editUserSchema,
   importUsersSchema,
+  removeMultipleUsersFromGroupSchema,
 } from "../../validation/user";
 import {
   validateRequestBody,
@@ -21,6 +22,7 @@ import {
   getUsers,
   importUsers,
   removeUser,
+  removeUsersFromGroup,
   updateStatusOfUsersInBulk,
 } from "../../controllers/user.controller";
 import { fileUpload } from "../../lib/file";
@@ -49,6 +51,12 @@ const userRoutes = (app: Router) => {
     verifyJwTToken,
     validateRequestBody(assignMultipleUsersToGroupSchema),
     addUsersToGroup
+  );
+  app.patch(
+    userPaths.removeUsersFromGroup.path as string,
+    verifyJwTToken,
+    validateRequestBody(removeMultipleUsersFromGroupSchema),
+    removeUsersFromGroup
   );
   app.patch(
     userPaths.changeUserStatusInBulk.path as string,

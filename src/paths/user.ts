@@ -31,9 +31,14 @@ const userPaths = {
     path: "/user/bulk/import",
     action: "User imported users!",
   },
+  // TODO: Update on postman the routes
   assignUsersToGroup: {
-    path: "/user/assign",
+    path: "/user/assign-to-group",
     action: "User assigned users to group!",
+  },
+  removeUsersFromGroup: {
+    path: "/user/remove-from-group",
+    action: "User removed from users from group!",
   },
 };
 

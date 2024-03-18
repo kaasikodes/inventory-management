@@ -75,6 +75,9 @@ export const retrieveAuditRecords = async ({
         summary: { contains: search },
         invokerId: { equals: invokerId },
       },
+      orderBy: {
+        invokedAt: "desc",
+      },
       select: {
         id: true,
         summary: true,
@@ -82,6 +85,8 @@ export const retrieveAuditRecords = async ({
         invoker: true,
         routePath: true,
         action: true,
+        status: true,
+        details: true,
       },
     });
 
