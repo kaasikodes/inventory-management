@@ -77,7 +77,6 @@ export const generateReport = async (
           conditionIds,
         });
 
-        console.log(data, "whwyyyy");
         message = "Inventory consumption report created successfully!";
 
         break;
@@ -100,7 +99,6 @@ export const generateReport = async (
           conditionIds,
         });
 
-        console.log(data, "whwyyyy");
         message = "Inventory supply report created successfully!";
 
       default:
@@ -705,13 +703,7 @@ export const getProductionMaturityVariationGraph = async (
           .map((item) => item / 1000 / 60 / 60);
         const actualMaturityPeriodOfItem = lodash.mean(produceDateInHrs);
         const expectedMaturityPeriodOfItem = lodash.mean(expectedDateInHrs);
-        console.log(
-          data
-            .map((item) => item["Actual Produce Date"])
-            .filter((item) => item),
-          "CONSUME"
-        );
-        console.log(produceDateInHrs, "produceDateInHrs");
+       
         return [
           item.name,
           {
