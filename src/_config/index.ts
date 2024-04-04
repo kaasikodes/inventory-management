@@ -1,5 +1,5 @@
 const config = {
-  port: 5000,
+  port: process.env.APP_PORT || 5000,
   dbUrl: "mongodb://localhost:27017",
   nodeEnv: process.env.NODE_ENV || "development",
   mail: {
