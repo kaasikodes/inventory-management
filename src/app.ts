@@ -21,7 +21,10 @@ const router = express.Router();
 // // Cross Origin Resource Sharing
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: [
+      "http://localhost:5173",
+      "https://inventory-management-fe-ten.vercel.app",
+    ],
     // origin: "*",
     // methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
     credentials: true,

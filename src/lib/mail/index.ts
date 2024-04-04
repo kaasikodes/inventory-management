@@ -3,6 +3,7 @@ import config from "../../_config";
 
 const transport = createTransport({
   host: "smtp.mailtrap.io",
+
   port: config.mail.port,
   auth: {
     user: config.mail.user,
