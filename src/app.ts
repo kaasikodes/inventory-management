@@ -24,6 +24,7 @@ app.use(
     origin: [
       "http://localhost:5173",
       "https://inventory-management-fe-ten.vercel.app",
+      "https://app.inventory-management.com.ng",
     ],
     // origin: "*",
     // methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
