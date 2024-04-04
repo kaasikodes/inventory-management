@@ -345,42 +345,45 @@ export const verifyUser = async (
   res: Response,
   next: NextFunction
 ) => {
-  const { email, token } = req.body;
-  const user = await verifyUserAccount({ email });
-  if (!user) {
-    return next(new AppError("User not found", 404));
-  }
-  const verificationToken = await getUserVerificationToken({ email, token });
-  if (!verificationToken) {
-    return next(new AppError("Verification token not found", 404));
-  }
-  const tokenHasExpired =
-    verificationToken && new Date(verificationToken?.expires) < new Date();
-  if (tokenHasExpired) {
-    return next(new AppError("Verification token has expired", 400));
-  }
-
-  await deleteVerificationToken({ id: verificationToken.id });
-
-  // TODO: Refactor the logic below to be a single callable fn
-  // create access and refresh token
-  const accessToken = createAccessToken({
-    email: user.email,
-    id: user.id,
-    name: user.name,
-  });
-  const refreshToken = createRefreshToken({
-    email: user.email,
-    id: user.id,
-    name: user.name,
-  });
-  await createAccountForTokenMonitoring({
-    accessToken,
-    refreshToken,
-    userId: user.id,
-  });
-
   try {
+    const { email, token } = req.body;
+    console.log("EMAIL", email);
+    // check for wether user exists
+    const userExists = await getUserByEmail({ email });
+    if (!userExists) {
+      return next(new AppError("User not found", 404));
+    }
+    const user = await verifyUserAccount({ email });
+    const verificationToken = await getUserVerificationToken({ email, token });
+    if (!verificationToken) {
+      return next(new AppError("Verification token not found", 404));
+    }
+    const tokenHasExpired =
+      verificationToken && new Date(verificationToken?.expires) < new Date();
+    if (tokenHasExpired) {
+      return next(new AppError("Verification token has expired", 400));
+    }
+
+    await deleteVerificationToken({ id: verificationToken.id });
+
+    // TODO: Refactor the logic below to be a single callable fn
+    // create access and refresh token
+    const accessToken = createAccessToken({
+      email: user.email,
+      id: user.id,
+      name: user.name,
+    });
+    const refreshToken = createRefreshToken({
+      email: user.email,
+      id: user.id,
+      name: user.name,
+    });
+    await createAccountForTokenMonitoring({
+      accessToken,
+      refreshToken,
+      userId: user.id,
+    });
+
     // set refresh token in cookie
 
     res.cookie(

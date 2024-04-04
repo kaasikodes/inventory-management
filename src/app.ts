@@ -6,7 +6,7 @@ import v1Routes from "./routes/v1";
 import { AppError } from "./types/error";
 import cors from "cors";
 
-const { port } = config;
+const { port, corsAcceptedOrigins } = config;
 const app = express();
 const router = express.Router();
 
@@ -21,11 +21,7 @@ const router = express.Router();
 // // Cross Origin Resource Sharing
 app.use(
   cors({
-    origin: [
-      "http://localhost:5173",
-      "https://inventory-management-fe-ten.vercel.app",
-      "https://app.inventory-management.com.ng",
-    ],
+    origin: corsAcceptedOrigins,
     // origin: "*",
     // methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
     credentials: true,

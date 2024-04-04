@@ -2,6 +2,11 @@ const config = {
   port: process.env.APP_PORT || 5000,
   dbUrl: "mongodb://localhost:27017",
   nodeEnv: process.env.NODE_ENV || "development",
+  corsAcceptedOrigins: [
+    "http://localhost:5173",
+    "https://inventory-management-fe-ten.vercel.app",
+    "https://app.inventory-management.com.ng",
+  ],
   mail: {
     user: "6c53d765680ca4",
     password: "83175273732073",
