@@ -1,7 +1,13 @@
 import { NextFunction, Request, Response } from "express";
-import { retrievePermissions } from "../services/permission";
+import {
+  retrievePermissions,
+  createDefaultPermissions,
+} from "../services/permission";
 import { TPaginationQuery, TSearchQuery } from "../types/generic";
-import { AppJSONResponseWithPagination } from "../types/reponse";
+import {
+  AppJSONResponse,
+  AppJSONResponseWithPagination,
+} from "../types/reponse";
 
 export const getPermissions = async (
   req: Request<{}, {}, {}, TPaginationQuery & TSearchQuery>,
@@ -26,6 +32,26 @@ export const getPermissions = async (
         result: data,
         total: metaData.total,
         hasNextPage: metaData.hasNextPage,
+      }
+    );
+    return res.status(200).json(jsonReponse);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const initializePermissions = async (
+  req: Request<{}, {}, {}>,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const permissions = await createDefaultPermissions();
+
+    const jsonReponse = new AppJSONResponse(
+      "Permissions initialized successfully!",
+      {
+        permissions,
       }
     );
     return res.status(200).json(jsonReponse);

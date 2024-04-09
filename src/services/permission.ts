@@ -1,4 +1,5 @@
 import config from "../_config";
+import { PERMISSION_LABELS } from "../constants";
 import { db } from "../lib/database";
 import { TPaginationQuery } from "../types/generic";
 
@@ -43,6 +44,19 @@ export const retrievePermissions = async ({
         total,
       },
     };
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const createDefaultPermissions = async () => {
+  try {
+    const data = await db.permission.createMany({
+      data: PERMISSION_LABELS.map((item) => ({ name: item, label: item })),
+     
+    });
+
+    return data;
   } catch (error) {
     throw error;
   }

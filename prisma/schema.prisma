@@ -115,19 +115,13 @@ model UserGroup {
   permissions PermissionsOnUserGroups[]
 
 }
-enum PermissionLabel {
-  CAN_MANAGE_FARMER_RECORDS
-  CAN_MANAGE_ITEM_INVENTORY
-  CAN_MANAGE_ITEM_INVENTORY_RECORDS
-  CAN_MANAGE_ITEM_INVENTORY_CONSUMPTION
-  CAN_MANAGE_USER_GROUPS
-}
+
 // permsissions 
 model Permission {
   id String @id @default(cuid())
 
   name String @unique
-  label PermissionLabel @unique
+  label String @unique
   userGroups PermissionsOnUserGroups[]
 }
 

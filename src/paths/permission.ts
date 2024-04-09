@@ -5,6 +5,10 @@ const permissionPaths: TPath = {
     path: "/permissions",
     action: "User accessed permissions!",
   },
+  initializePermissions: {
+    path: "/permissions/initialize",
+    action: "User initialized permissions!",
+  },
 };
 
 export default permissionPaths;
