@@ -1,4 +1,5 @@
 const config = {
+  APP_NAME: process.env.APP_NAME || "Inventory Management",
   port: process.env.APP_PORT || 5000,
   dbUrl: "mongodb://localhost:27017",
   nodeEnv: process.env.NODE_ENV || "development",

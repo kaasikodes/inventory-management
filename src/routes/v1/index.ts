@@ -15,10 +15,14 @@ import reportRoutes from "./report";
 import notificationRoutes from "./notification";
 import auditRoutes from "./audit";
 import generationPeriodRoutes from "./generation-period";
+import metricsRoutes from "./metrics";
+import { prometheus } from "../../lib/utils/metrics";
 
 const routes = (app: Router) => {
+  const { register, userCounter } = prometheus();
+  metricsRoutes(app, register);
   authRoutes(app);
-  userRoutes(app);
+  userRoutes(app, userCounter);
   userGroupRoutes(app);
   permissionRoutes(app);
   creditLimitRoutes(app);

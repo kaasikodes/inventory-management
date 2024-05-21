@@ -6,7 +6,7 @@ import {
   changeUserStatusInBulkSchema,
   editUserSchema,
   importUsersSchema,
-  removeMultipleUsersFromGroupSchema
+  removeMultipleUsersFromGroupSchema,
 } from "../validation/user";
 import {
   assignMultipleUsersToGroup,
@@ -31,6 +31,7 @@ import { createOrUpdateAddress } from "../services/address.service";
 import { executeAddUserSteps } from "../lib/utils/user";
 import { AppError } from "../types/error";
 import { TPaginationQuery, TSearchQuery } from "../types/generic";
+import { Counter } from "prom-client";
 
 export const exportUserImportTemplate = async (
   req: Request,
@@ -60,7 +61,7 @@ export const removeUsersFromGroup = async (
 ) => {
   try {
     const { groupId, userIds } = req.body;
-  
+
     const users = await removeMultipleUsersFromGroup({
       groupId,
       userIds,
@@ -184,42 +185,45 @@ export const getUser = async (
     next(error);
   }
 };
-export const getUsers = async (
-  req: Request<
-    {},
-    {},
-    {},
-    TPaginationQuery & TSearchQuery & { groupIds?: string }
-  >,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const { lastItemIndex, pageSize, search, groupIds } = req.query;
+export const getUsers =
+  (userCounter: Counter) =>
+  async (
+    req: Request<
+      {},
+      {},
+      {},
+      TPaginationQuery & TSearchQuery & { groupIds?: string }
+    >,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      const { lastItemIndex, pageSize, search, groupIds } = req.query;
 
-    const { metaData, data } = await retrieveUsers({
-      pagination: {
-        lastItemIndex,
-        pageSize,
-      },
-      search,
-      groupIds: groupIds?.split(","),
-    });
+      const { metaData, data } = await retrieveUsers({
+        pagination: {
+          lastItemIndex,
+          pageSize,
+        },
+        search,
+        groupIds: groupIds?.split(","),
+      });
 
-    const jsonReponse = new AppJSONResponseWithPagination(
-      "Users retrieved successfully!",
-      {
-        lastItemIndex: metaData.lastIndex,
-        result: data,
-        total: metaData.total,
-        hasNextPage: metaData.hasNextPage,
-      }
-    );
-    return res.status(200).json(jsonReponse);
-  } catch (error) {
-    next(error);
-  }
-};
+      const jsonReponse = new AppJSONResponseWithPagination(
+        "Users retrieved successfully!",
+        {
+          lastItemIndex: metaData.lastIndex,
+          result: data,
+          total: metaData.total,
+          hasNextPage: metaData.hasNextPage,
+        }
+      );
+      userCounter.inc();
+      return res.status(200).json(jsonReponse);
+    } catch (error) {
+      next(error);
+    }
+  };
 export const importUsers = async (
   req: Request<{}, {}, z.infer<typeof importUsersSchema>>,
   res: Response,

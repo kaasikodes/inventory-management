@@ -28,11 +28,11 @@ import {
 import { fileUpload } from "../../lib/file";
 import { parseCsvFileToRequestBody } from "../../middleware/file";
 import { checkUniquenessOfEmailsDuringImport } from "../../middleware/user";
-import { recordAuditReport } from "../../middleware/audit";
 
-const userRoutes = (app: Router) => {
+import { Counter } from "prom-client";
+
+const userRoutes = (app: Router, userCounter: Counter) => {
   //app.use(verifyJwTToken, recordAuditReport);
-
   app.post(
     userPaths.importUsers.path as string,
     verifyJwTToken,
@@ -79,7 +79,11 @@ const userRoutes = (app: Router) => {
   );
 
   app.get(userPaths.getUser.path as string, verifyJwTToken, getUser);
-  app.get(userPaths.getUsers.path as string, verifyJwTToken, getUsers);
+  app.get(
+    userPaths.getUsers.path as string,
+    verifyJwTToken,
+    getUsers(userCounter)
+  );
   app.get(
     userPaths.getUserImportTemplate.path as string,
     verifyJwTToken,

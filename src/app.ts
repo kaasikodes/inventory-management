@@ -40,10 +40,10 @@ app.use(cookieParser());
 app.listen(port, () => {
   v1Routes(router);
   app.use("/v1", router);
-  app.use("/address", (request, response) => {
-    // write logic to make request to external api
-
-    const data = {};
+  app.use("/healthz", (request, response) => {
+    const data = {
+      message: "Server is up and running",
+    };
     response.status(200).json({
       data,
     });
