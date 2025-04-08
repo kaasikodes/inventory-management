@@ -8,8 +8,8 @@ const config = {
     "https://app.inventory-management.com.ng",
   ],
   mail: {
-    user: "6c53d765680ca4",
-    password: "83175273732073",
+    user: "",
+    password: "",
     port: 2525,
   },
   ACCESS_TOKEN_SECRET: "ACCESS_TOKEN_SECRET",
